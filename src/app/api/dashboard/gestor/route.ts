@@ -14,15 +14,17 @@ export async function GET(request: NextRequest) {
 
     const [vendedores, allLeads, clientes] = await Promise.all([
       prisma.user.findMany({
-        where: { role: 'vendedor', ativo: true },
+        where: { role: 'vendedor', ativo: true, gestorId: user.id },
       }),
       prisma.lead.findMany({
+        where: { vendedor: { gestorId: user.id } },
         include: {
           checklistItems: true,
           followups: true,
         },
       }),
       prisma.cliente.findMany({
+        where: { vendedor: { gestorId: user.id } },
         include: {
           contatos: {
             where: { dataContato: { gte: inicioMes, lte: fimMes } },

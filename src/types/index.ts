@@ -60,6 +60,7 @@ export interface User {
   email: string
   role: Role
   ativo: boolean
+  gestorId?: string | null
   criadoEm: string
   atualizadoEm: string
 }

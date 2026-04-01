@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
     // If gestor, compute ranking for all vendors
     if (user.role === 'gestor') {
       const vendedores = await prisma.user.findMany({
-        where: { role: 'vendedor', ativo: true },
+        where: { role: 'vendedor', ativo: true, gestorId: user.id },
         select: { id: true, nome: true },
       })
 
