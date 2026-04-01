@@ -59,15 +59,22 @@ export const RESULTADOS_CONTATO = [
 ] as const
 
 export const COMMISSION_TABLE = [
-  { min: 0, max: 16000, pct: 0, label: 'Abaixo de R$ 16.000' },
-  { min: 16001, max: 19000, pct: 3, label: 'R$ 16.001 – R$ 19.000' },
-  { min: 19001, max: 21000, pct: 6, label: 'R$ 19.001 – R$ 21.000' },
-  { min: 21001, max: 26000, pct: 8, label: 'R$ 21.001 – R$ 26.000' },
-  { min: 26001, max: 31000, pct: 12, label: 'R$ 26.001 – R$ 31.000' },
-  { min: 31001, max: 35000, pct: 16, label: 'R$ 31.001 – R$ 35.000' },
-  { min: 35001, max: 40000, pct: 18, label: 'R$ 35.001 – R$ 40.000' },
-  { min: 40001, max: 61999, pct: 20, label: 'R$ 40.001 – R$ 61.999' },
-  { min: 62000, max: Infinity, pct: 26, label: 'Acima de R$ 62.000' },
+  { min: 0,      max: 16000,    pct: 0,  label: 'Abaixo de R$ 16.000' },
+  { min: 16001,  max: 19000,    pct: 3,  label: 'R$ 16.001 – R$ 19.000' },
+  { min: 19001,  max: 21000,    pct: 6,  label: 'R$ 19.001 – R$ 21.000' },
+  { min: 21001,  max: 26000,    pct: 8,  label: 'R$ 21.001 – R$ 26.000' },
+  { min: 26001,  max: 31000,    pct: 12, label: 'R$ 26.001 – R$ 31.000' },
+  { min: 31001,  max: 35000,    pct: 16, label: 'R$ 31.001 – R$ 35.000' },
+  { min: 35001,  max: 40000,    pct: 18, label: 'R$ 35.001 – R$ 40.000' },
+  { min: 40001,  max: 50000,    pct: 20, label: 'R$ 40.001 – R$ 50.000' },
+  { min: 50001,  max: 61000,    pct: 22, label: 'R$ 50.001 – R$ 61.000' },
+  { min: 61001,  max: 80000,    pct: 24, label: 'R$ 61.001 – R$ 80.000' },
+  { min: 80001,  max: 90000,    pct: 26, label: 'R$ 80.001 – R$ 90.000' },
+  { min: 90001,  max: 100000,   pct: 28, label: 'R$ 90.001 – R$ 100.000' },
+  { min: 100001, max: 110000,   pct: 29, label: 'R$ 100.001 – R$ 110.000' },
+  { min: 110001, max: 125000,   pct: 30, label: 'R$ 110.001 – R$ 125.000' },
+  { min: 125001, max: 145000,   pct: 31, label: 'R$ 125.001 – R$ 145.000' },
+  { min: 145001, max: Infinity, pct: 32, label: 'Acima de R$ 145.001' },
 ] as const
 
 export const STATUS_CARTEIRA = {
