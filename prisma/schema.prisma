@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  gestor
+  vendedor
+}
+
+enum EtapaLead {
+  fez_contato
+  proposta_enviada
+  negociacao
+  chamar_depois
+  comprou
+  desqualificado
+  geladeira
+}
+
+enum StatusLead {
+  ativo
+  geladeira
+  convertido
+  desqualificado
+}
+
+enum TipoContato {
+  pos_venda
+  recompra
+  promocao
+  ligacao
+  whatsapp_texto
+  whatsapp_audio
+  relacionamento
+  lembrete_reposicao
+}
+
+enum ResultadoContato {
+  respondeu
+  nao_respondeu
+  demonstrou_interesse
+  pediu_retorno
+  comprou
+  sem_interesse
+}
+
+enum MotivoDesqualificacao {
+  sem_interesse
+  gado_pouco
+  achou_caro
+  nao_conhece_produto
+  sem_registro_mapa
+  nunca_respondeu_8_tentativas
+  outro
+}
+
+enum ObjecaoTratada {
+  achou_caro
+  gado_pouco
+  nao_conhece_produto
+  sem_interesse
+  sem_registro_mapa
+  outro
+}
+
+enum OrigemLead {
+  rastreado
+  nao_rastreado
+}
+
+model User {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senha        String
+  role         Role
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  leads           Lead[]
+  followups       Followup[]
+  contatos        ContatoCliente[]
+  reativacoes     ReativacaoLead[]
+  notificacoes    Notificacao[]
+}
+
+model Produto {
+  id                 String   @id @default(cuid())
+  nome               String
+  cicloRecompraDias  Int      @default(30)
+  ativo              Boolean  @default(true)
+  criadoEm           DateTime @default(now())
+  atualizadoEm       DateTime @updatedAt
+
+  leads    Lead[]
+  clientes Cliente[]
+}
+
+model Lead {
+  id                  String                 @id @default(cuid())
+  nomeCliente         String
+  whatsapp            String
+  produtoId           String?
+  produto             Produto?               @relation(fields: [produtoId], references: [id])
+  origem              OrigemLead             @default(nao_rastreado)
+  observacoes         String?
+  etapa               EtapaLead              @default(fez_contato)
+  statusLead          StatusLead             @default(ativo)
+  vendedorId          String
+  vendedor            User                   @relation(fields: [vendedorId], references: [id])
+  dentroJanela        Boolean                @default(true)
+  chegouEm            DateTime               @default(now())
+  primeiraRespostaEm  DateTime?
+  agendadoPara        DateTime?
+  atrasado            Boolean                @default(false)
+  motivoDesqualificacao MotivoDesqualificacao?
+  motivoDesqualificacaoOutro String?
+  valorBruto          Float?
+  valorLiquido        Float?
+  observacaoVenda     String?
+  clienteId           String?
+  cliente             Cliente?               @relation(fields: [clienteId], references: [id])
+
+  entadaGeladeira     DateTime?
+  proximaReativacao   DateTime?
+  tentativasReativacao Int                   @default(0)
+
+  criadoEm            DateTime               @default(now())
+  atualizadoEm        DateTime               @updatedAt
+
+  followups           Followup[]
+  checklistItems      ScriptChecklistItem[]
+  historicoEtapas     LeadEtapaHistorico[]
+  reativacoes         ReativacaoLead[]
+  notificacoes        Notificacao[]
+}
+
+model Followup {
+  id           String   @id @default(cuid())
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vendedorId   String
+  vendedor     User     @relation(fields: [vendedorId], references: [id])
+  numero       Int
+  observacao   String?
+  registradoEm DateTime @default(now())
+  criadoEm     DateTime @default(now())
+}
+
+model ScriptChecklistItem {
+  id            String          @id @default(cuid())
+  leadId        String
+  lead          Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  item          Int
+  concluido     Boolean         @default(false)
+  objecao       ObjecaoTratada?
+  objecaoOutro  String?
+  concluidoEm   DateTime?
+  criadoEm      DateTime        @default(now())
+  atualizadoEm  DateTime        @updatedAt
+
+  @@unique([leadId, item])
+}
+
+model LeadEtapaHistorico {
+  id            String     @id @default(cuid())
+  leadId        String
+  lead          Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  etapaAnterior EtapaLead?
+  etapaNova     EtapaLead
+  mudadoEm      DateTime   @default(now())
+  observacao    String?
+}
+
+model Cliente {
+  id                  String   @id @default(cuid())
+  nome                String
+  whatsapp            String
+  vendedorId          String
+  ultimoProdutoId     String?
+  ultimoProduto       Produto? @relation(fields: [ultimoProdutoId], references: [id])
+  dataPrimeiraCompra  DateTime
+  dataUltimaCompra    DateTime
+  totalCompras        Int      @default(1)
+  valorTotalAcumulado Float    @default(0)
+  ultimoContato       DateTime?
+  proximaAcao         String?
+  statusRelacionamento String  @default("ativo")
+  criadoEm            DateTime @default(now())
+  atualizadoEm        DateTime @updatedAt
+
+  contatos  ContatoCliente[]
+  leads     Lead[]
+}
+
+model ContatoCliente {
+  id          String           @id @default(cuid())
+  clienteId   String
+  cliente     Cliente          @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  vendedorId  String
+  vendedor    User             @relation(fields: [vendedorId], references: [id])
+  tipo        TipoContato
+  resultado   ResultadoContato
+  observacao  String?
+  dataContato DateTime         @default(now())
+  criadoEm    DateTime         @default(now())
+}
+
+model ReativacaoLead {
+  id            String   @id @default(cuid())
+  leadId        String
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vendedorId    String
+  vendedor      User     @relation(fields: [vendedorId], references: [id])
+  resultado     String?
+  observacao    String?
+  voltouAoFunil Boolean  @default(false)
+  etapaRetorno  String?
+  realizadaEm   DateTime @default(now())
+  criadoEm      DateTime @default(now())
+}
+
+model TemplateMensagem {
+  id           String   @id @default(cuid())
+  nome         String
+  categoria    String
+  conteudo     String
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model Notificacao {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tipo      String
+  mensagem  String
+  lida      Boolean  @default(false)
+  criadoEm  DateTime @default(now())
+}
+
+model ConfiguracaoSistema {
+  id           String   @id @default(cuid())
+  chave        String   @unique
+  valor        String
+  descricao    String?
+  atualizadoEm DateTime @updatedAt
+}
