@@ -5,13 +5,14 @@ import { z } from 'zod'
 import { addDays } from 'date-fns'
 
 const moveEtapaSchema = z.object({
-  etapa: z.enum(['fez_contato', 'proposta_enviada', 'negociacao', 'chamar_depois', 'comprou', 'desqualificado', 'geladeira']),
+  etapa: z.enum(['fez_contato', 'proposta_enviada', 'negociacao', 'chamar_depois', 'correios', 'comprou', 'voltou', 'desqualificado', 'geladeira']),
   agendadoPara: z.string().datetime().optional().nullable(),
   motivoDesqualificacao: z.string().optional().nullable(),
   motivoDesqualificacaoOutro: z.string().optional().nullable(),
   valorBruto: z.number().optional().nullable(),
   valorLiquido: z.number().optional().nullable(),
   observacaoVenda: z.string().optional().nullable(),
+  formaPagamento: z.enum(['pix', 'cartao', 'retirada']).optional().nullable(),
   observacao: z.string().optional().nullable(),
   etapaRetorno: z.enum(['proposta_enviada', 'negociacao']).optional(),
 })
@@ -39,7 +40,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 })
     }
 
-    const { etapa, agendadoPara, motivoDesqualificacao, motivoDesqualificacaoOutro, valorBruto, valorLiquido, observacaoVenda, observacao, etapaRetorno } = result.data
+    const { etapa, agendadoPara, motivoDesqualificacao, motivoDesqualificacaoOutro, valorBruto, valorLiquido, observacaoVenda, formaPagamento, observacao, etapaRetorno } = result.data
 
     // Validations
     if (etapa === 'chamar_depois' && !agendadoPara) {
@@ -81,11 +82,32 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       updateData.tentativasReativacao = 0
     }
 
+    // Venda: correios (pagamento na retirada) ou comprou (pix/cartão)
+    if (etapa === 'correios') {
+      // Venda registrada mas aguardando retirada — conta para a meta do mês
+      if (valorBruto) updateData.valorBruto = valorBruto
+      if (valorLiquido) updateData.valorLiquido = valorLiquido
+      if (observacaoVenda) updateData.observacaoVenda = observacaoVenda
+      if (formaPagamento) updateData.formaPagamento = formaPagamento
+      updateData.comprouEm = new Date()
+      // statusLead permanece ativo (aguardando retirada)
+    }
+
     if (etapa === 'comprou') {
       updateData.statusLead = 'convertido'
       if (valorBruto) updateData.valorBruto = valorBruto
       if (valorLiquido) updateData.valorLiquido = valorLiquido
       if (observacaoVenda) updateData.observacaoVenda = observacaoVenda
+      if (formaPagamento) updateData.formaPagamento = formaPagamento
+
+      // Se veio de correios (confirmou retirada), usa dados já salvos
+      const valorLiquidoFinal = valorLiquido ?? lead.valorLiquido ?? 0
+      const valorBrutoFinal = valorBruto ?? lead.valorBruto ?? 0
+
+      // Marca a data de compra se não tiver (pix/cartão direto)
+      if (!lead.comprouEm) {
+        updateData.comprouEm = new Date()
+      }
 
       // Create or update client in carteira
       const existingCliente = await prisma.cliente.findFirst({
@@ -99,7 +121,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             nome: lead.nomeCliente,
             dataUltimaCompra: new Date(),
             totalCompras: { increment: 1 },
-            valorTotalAcumulado: { increment: valorLiquido || 0 },
+            valorTotalAcumulado: { increment: valorLiquidoFinal },
             ultimoProdutoId: lead.produtoId || undefined,
           },
         })
@@ -114,11 +136,18 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
             dataPrimeiraCompra: new Date(),
             dataUltimaCompra: new Date(),
             totalCompras: 1,
-            valorTotalAcumulado: valorLiquido || 0,
+            valorTotalAcumulado: valorLiquidoFinal,
           },
         })
         updateData.clienteId = novoCliente.id
       }
+    }
+
+    if (etapa === 'voltou') {
+      // Produto voltou dos correios — desconta da meta do mês atual
+      updateData.voltouEm = new Date()
+      // statusLead volta para ativo (lead pode ser retrabalahdo)
+      updateData.statusLead = 'ativo'
     }
 
     // If returning from geladeira

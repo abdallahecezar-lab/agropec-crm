@@ -21,6 +21,8 @@ const etapaTitles: Record<string, string> = {
   chamar_depois: 'Chamar Depois',
   desqualificado: 'Desqualificado',
   comprou: 'Comprou',
+  correios: 'Correios (Pag. na Retirada)',
+  voltou: 'Voltou (Não Retirou)',
   geladeira: 'Geladeira',
 }
 
@@ -32,7 +34,14 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
   const [valorBruto, setValorBruto] = useState('')
   const [valorLiquido, setValorLiquido] = useState('')
   const [observacaoVenda, setObservacaoVenda] = useState('')
+  const [formaPagamento, setFormaPagamento] = useState<'pix' | 'cartao' | 'retirada'>('pix')
   const [observacao, setObservacao] = useState('')
+
+  // Se destino é 'comprou' mas forma de pagamento é 'retirada',
+  // na verdade o lead vai para 'correios'
+  const etapaReal = (etapaDestino === 'comprou' && formaPagamento === 'retirada')
+    ? 'correios'
+    : etapaDestino
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -42,6 +51,7 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
       if (etapaDestino === 'chamar_depois') {
         if (!agendadoPara) {
           alert('Data/hora obrigatória')
+          setLoading(false)
           return
         }
         data.agendadoPara = new Date(agendadoPara).toISOString()
@@ -50,6 +60,7 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
       if (etapaDestino === 'desqualificado') {
         if (!motivoDesqualificacao) {
           alert('Motivo obrigatório')
+          setLoading(false)
           return
         }
         data.motivoDesqualificacao = motivoDesqualificacao
@@ -58,10 +69,13 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
         }
       }
 
-      if (etapaDestino === 'comprou') {
+      if (etapaDestino === 'comprou' || etapaDestino === 'correios') {
         data.valorBruto = valorBruto ? parseFloat(valorBruto) : null
         data.valorLiquido = valorLiquido ? parseFloat(valorLiquido) : null
         data.observacaoVenda = observacaoVenda
+        data.formaPagamento = formaPagamento
+        // redireciona para correios se pagamento na retirada
+        data.etapa = etapaReal
       }
 
       await onConfirm(data)
@@ -79,6 +93,8 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
     return now.toISOString().slice(0, 16)
   }
+
+  const isVenda = etapaDestino === 'comprou' || etapaDestino === 'correios'
 
   return (
     <Modal
@@ -142,8 +158,43 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
           </>
         )}
 
-        {etapaDestino === 'comprou' && (
+        {isVenda && (
           <>
+            {/* Forma de pagamento — só aparece quando destino é 'comprou' */}
+            {etapaDestino === 'comprou' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Forma de Pagamento *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 'pix', label: '💰 Pix', desc: 'Pagamento antecipado' },
+                    { value: 'cartao', label: '💳 Cartão', desc: 'Link de crédito' },
+                    { value: 'retirada', label: '📦 Correios', desc: 'Pag. na retirada' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setFormaPagamento(opt.value as any)}
+                      className={`p-3 rounded-lg border-2 text-center text-sm transition-all ${
+                        formaPagamento === opt.value
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="font-medium">{opt.label}</div>
+                      <div className="text-xs mt-0.5 opacity-70">{opt.desc}</div>
+                    </button>
+                  ))}
+                </div>
+                {formaPagamento === 'retirada' && (
+                  <div className="mt-2 p-2 bg-sky-50 rounded text-xs text-sky-700 flex items-center gap-1.5">
+                    📦 <span>Este lead irá para a aba <strong>Correios</strong> até o cliente retirar e pagar.</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Valor Bruto (R$)"
@@ -171,10 +222,18 @@ export function MoveStageModal({ isOpen, onClose, onConfirm, etapaDestino, leadN
               placeholder="Detalhes sobre a venda..."
               rows={2}
             />
-            <div className="p-3 bg-green-50 rounded-lg text-sm text-green-800">
-              ✅ O lead será convertido em cliente na carteira automaticamente.
-            </div>
+            {formaPagamento !== 'retirada' && etapaDestino === 'comprou' && (
+              <div className="p-3 bg-green-50 rounded-lg text-sm text-green-800">
+                ✅ O lead será convertido em cliente na carteira automaticamente.
+              </div>
+            )}
           </>
+        )}
+
+        {etapaDestino === 'voltou' && (
+          <div className="p-3 bg-rose-50 rounded-lg text-sm text-rose-800">
+            📦 O cliente não retirou o produto nos Correios. O valor da venda será <strong>descontado da meta do mês atual</strong>.
+          </div>
         )}
 
         {etapaDestino === 'geladeira' && (

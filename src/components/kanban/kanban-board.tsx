@@ -91,7 +91,7 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
 
     if (targetEtapa === lead.etapa) return
 
-    const etapasRequiringModal = ['chamar_depois', 'desqualificado', 'comprou', 'geladeira']
+    const etapasRequiringModal = ['chamar_depois', 'desqualificado', 'comprou', 'correios', 'voltou', 'geladeira']
 
     if (etapasRequiringModal.includes(targetEtapa)) {
       setMoveModal({
@@ -108,6 +108,8 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
   }
 
   const moveLeadToEtapa = async (leadId: string, etapa: EtapaLead, extraData?: any) => {
+    // extraData.etapa can override when 'comprou' is redirected to 'correios'
+    const etapaFinal = ((extraData?.etapa as EtapaLead) || etapa)
     try {
       const res = await fetch(`/api/leads/${leadId}/etapa`, {
         method: 'PATCH',
@@ -121,18 +123,19 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
             if (l.id === leadId) {
               return {
                 ...l,
-                etapa,
+                etapa: etapaFinal,
                 statusLead:
-                  etapa === 'comprou' ? 'convertido'
-                  : etapa === 'desqualificado' ? 'desqualificado'
-                  : etapa === 'geladeira' ? 'geladeira'
+                  etapaFinal === 'comprou' ? 'convertido'
+                  : etapaFinal === 'desqualificado' ? 'desqualificado'
+                  : etapaFinal === 'geladeira' ? 'geladeira'
+                  : etapaFinal === 'voltou' ? 'ativo'
                   : l.statusLead,
               }
             }
             return l
           })
         )
-        onLeadMoved?.(leadId, etapa)
+        onLeadMoved?.(leadId, etapaFinal)
       }
     } catch (error) {
       console.error('Erro ao mover lead:', error)

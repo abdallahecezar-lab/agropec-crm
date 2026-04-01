@@ -115,7 +115,9 @@ export function getEtapaLabel(etapa: string): string {
     proposta_enviada: 'Proposta Enviada',
     negociacao: 'Negociação',
     chamar_depois: 'Chamar Depois',
+    correios: 'Correios',
     comprou: 'Comprou',
+    voltou: 'Voltou',
     desqualificado: 'Desqualificado',
     geladeira: 'Geladeira',
   }
@@ -128,7 +130,9 @@ export function getEtapaColor(etapa: string): string {
     proposta_enviada: 'bg-yellow-100 text-yellow-800',
     negociacao: 'bg-orange-100 text-orange-800',
     chamar_depois: 'bg-purple-100 text-purple-800',
+    correios: 'bg-sky-100 text-sky-800',
     comprou: 'bg-green-100 text-green-800',
+    voltou: 'bg-rose-100 text-rose-800',
     desqualificado: 'bg-red-100 text-red-800',
     geladeira: 'bg-slate-100 text-slate-800',
   }

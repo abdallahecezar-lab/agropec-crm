@@ -5,9 +5,13 @@ export type EtapaLead =
   | 'proposta_enviada'
   | 'negociacao'
   | 'chamar_depois'
+  | 'correios'
   | 'comprou'
+  | 'voltou'
   | 'desqualificado'
   | 'geladeira'
+
+export type FormaPagamento = 'pix' | 'cartao' | 'retirada'
 
 export type StatusLead = 'ativo' | 'geladeira' | 'convertido' | 'desqualificado'
 
@@ -118,6 +122,9 @@ export interface Lead {
   motivoDesqualificacaoOutro?: string | null
   valorBruto?: number | null
   valorLiquido?: number | null
+  formaPagamento?: FormaPagamento | null
+  comprouEm?: string | null
+  voltouEm?: string | null
   observacaoVenda?: string | null
   clienteId?: string | null
   entadaGeladeira?: string | null

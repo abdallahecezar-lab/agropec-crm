@@ -17,9 +17,17 @@ enum EtapaLead {
   proposta_enviada
   negociacao
   chamar_depois
+  correios
   comprou
+  voltou
   desqualificado
   geladeira
+}
+
+enum FormaPagamento {
+  pix
+  cartao
+  retirada
 }
 
 enum StatusLead {
@@ -124,6 +132,9 @@ model Lead {
   valorBruto          Float?
   valorLiquido        Float?
   observacaoVenda     String?
+  formaPagamento      FormaPagamento?
+  comprouEm           DateTime?
+  voltouEm            DateTime?
   clienteId           String?
   cliente             Cliente?               @relation(fields: [clienteId], references: [id])
 
