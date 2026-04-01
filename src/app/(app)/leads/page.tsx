@@ -117,7 +117,7 @@ export default function LeadsPage() {
                 <TableTh>Follow-ups</TableTh>
                 <TableTh>Valor</TableTh>
                 <TableTh>Chegou</TableTh>
-                <TableTh></TableTh>
+                <TableTh>{''}</TableTh>
               </TableRow>
             </TableHead>
             <TableBody>

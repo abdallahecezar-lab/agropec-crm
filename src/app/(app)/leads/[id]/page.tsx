@@ -19,7 +19,7 @@ import {
   formatCurrency,
 } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
-import type { Lead, Followup, ScriptChecklistItem, LeadEtapaHistorico } from '@/types'
+import type { Lead, Followup, ScriptChecklistItem, LeadEtapaHistorico, EtapaLead } from '@/types'
 import Link from 'next/link'
 
 export default function LeadDetailPage() {
@@ -29,6 +29,7 @@ export default function LeadDetailPage() {
   const [lead, setLead] = useState<Lead | null>(null)
   const [loading, setLoading] = useState(true)
   const [showMoveModal, setShowMoveModal] = useState(false)
+  const [etapaDestino, setEtapaDestino] = useState<EtapaLead>('chamar_depois')
   const [activeTab, setActiveTab] = useState<'info' | 'followups' | 'checklist' | 'historico'>('info')
 
   const fetchLead = async () => {
@@ -72,7 +73,13 @@ export default function LeadDetailPage() {
     })
   }
 
-  const handleStageMoved = () => {
+  const handleStageMoved = async (data: any) => {
+    if (!lead) return
+    await fetch(`/api/leads/${lead.id}/etapa`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ etapa: etapaDestino, ...data }),
+    })
     fetchLead()
     setShowMoveModal(false)
   }
@@ -149,9 +156,24 @@ export default function LeadDetailPage() {
               </div>
             </div>
 
-            <Button onClick={() => setShowMoveModal(true)} variant="primary" size="sm">
-              Mover Etapa
-            </Button>
+            <div className="flex items-center gap-2">
+              <select
+                value={etapaDestino}
+                onChange={(e) => setEtapaDestino(e.target.value as EtapaLead)}
+                className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="fez_contato">Fez Contato</option>
+                <option value="proposta_enviada">Proposta Enviada</option>
+                <option value="negociacao">Negociação</option>
+                <option value="chamar_depois">Chamar Depois</option>
+                <option value="comprou">Comprou</option>
+                <option value="desqualificado">Desqualificado</option>
+                <option value="geladeira">Geladeira</option>
+              </select>
+              <Button onClick={() => setShowMoveModal(true)} variant="primary" size="sm">
+                Mover
+              </Button>
+            </div>
           </div>
 
           {/* Quick stats */}
@@ -358,10 +380,12 @@ export default function LeadDetailPage() {
 
       {showMoveModal && lead && (
         <MoveStageModal
-          lead={lead}
           isOpen={showMoveModal}
           onClose={() => setShowMoveModal(false)}
-          onMoved={handleStageMoved}
+          onConfirm={handleStageMoved}
+          etapaDestino={etapaDestino}
+          leadNome={lead.nomeCliente}
+          followupCount={lead.followups?.length || 0}
         />
       )}
     </div>
