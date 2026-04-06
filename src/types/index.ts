@@ -1,4 +1,4 @@
-export type Role = 'gestor' | 'vendedor'
+export type Role = 'gestor' | 'vendedor' | 'diretor'
 
 export type EtapaLead =
   | 'fez_contato'
