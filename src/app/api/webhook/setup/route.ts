@@ -18,19 +18,28 @@ export async function GET(request: NextRequest) {
       const email = 'luis.alecezar@gmail.com'
       const senhaHash = await hash('Agropec2024', 10)
 
-      // Check if user exists
-      const existing = await prisma.user.findUnique({ where: { email } })
-
-      if (existing) {
-        // Use raw SQL to bypass Prisma client enum validation (role 'diretor' may not be in compiled client)
-        await prisma.$executeRawUnsafe(
-          `UPDATE "User" SET role = 'diretor'::"Role" WHERE email = $1`,
-          email
-        )
-        return NextResponse.json({ message: 'Usuário atualizado para diretor', user: { id: existing.id, nome: existing.nome, email, role: 'diretor' } })
+      // Step 1: Ensure 'diretor' exists in the PostgreSQL "Role" enum
+      try {
+        await prisma.$executeRawUnsafe(`ALTER TYPE "Role" ADD VALUE IF NOT EXISTS 'diretor'`)
+      } catch {
+        // Ignore if already exists or not supported
       }
 
-      // Create via raw SQL to bypass enum validation
+      // Step 2: Check if user exists
+      const existing = await prisma.$queryRawUnsafe<Array<{id: string, nome: string}>>(
+        `SELECT id, nome FROM "User" WHERE email = $1`,
+        email
+      )
+
+      if (existing.length > 0) {
+        await prisma.$executeRawUnsafe(
+          `UPDATE "User" SET role = 'diretor'::"Role", "atualizadoEm" = NOW() WHERE email = $1`,
+          email
+        )
+        return NextResponse.json({ message: 'Usuário atualizado para diretor', user: { id: existing[0].id, nome: existing[0].nome, email, role: 'diretor' } })
+      }
+
+      // Step 3: Create user with raw SQL
       const cuid = `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 9)}`
       await prisma.$executeRawUnsafe(
         `INSERT INTO "User" (id, nome, email, senha, role, ativo, "criadoEm", "atualizadoEm")
