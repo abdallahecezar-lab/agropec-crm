@@ -18,36 +18,35 @@ export async function GET(request: NextRequest) {
       const email = 'luis.alecezar@gmail.com'
       const senhaHash = await hash('Agropec2024', 10)
 
+      // Check if user exists
       const existing = await prisma.user.findUnique({ where: { email } })
 
       if (existing) {
-        const updated = await prisma.user.update({
-          where: { email },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: { role: 'diretor' as any },
-          select: { id: true, nome: true, email: true, role: true },
-        })
-        return NextResponse.json({ message: 'Usuário atualizado para diretor', user: updated })
+        // Use raw SQL to bypass Prisma client enum validation (role 'diretor' may not be in compiled client)
+        await prisma.$executeRawUnsafe(
+          `UPDATE "User" SET role = 'diretor'::"Role" WHERE email = $1`,
+          email
+        )
+        return NextResponse.json({ message: 'Usuário atualizado para diretor', user: { id: existing.id, nome: existing.nome, email, role: 'diretor' } })
       }
 
-      const novoUser = await prisma.user.create({
-        data: {
-          nome: 'Luis Cezar',
-          email,
-          senha: senhaHash,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          role: 'diretor' as any,
-          gestorId: null,
-        },
-        select: { id: true, nome: true, email: true, role: true },
-      })
+      // Create via raw SQL to bypass enum validation
+      const cuid = `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 9)}`
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO "User" (id, nome, email, senha, role, ativo, "criadoEm", "atualizadoEm")
+         VALUES ($1, $2, $3, $4, 'diretor'::"Role", true, NOW(), NOW())`,
+        cuid,
+        'Luis Cezar',
+        email,
+        senhaHash
+      )
 
-      return NextResponse.json({ message: 'Usuário diretor criado com sucesso', user: novoUser }, { status: 201 })
+      return NextResponse.json({ message: 'Usuário diretor criado com sucesso', user: { id: cuid, nome: 'Luis Cezar', email, role: 'diretor' } }, { status: 201 })
     }
 
     return NextResponse.json({ error: 'Ação inválida' }, { status: 400 })
   } catch (error) {
     console.error('GET /api/webhook/setup error:', error)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+    return NextResponse.json({ error: 'Erro interno', detail: String(error) }, { status: 500 })
   }
 }
