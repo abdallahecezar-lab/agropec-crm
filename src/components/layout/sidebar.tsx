@@ -9,7 +9,7 @@ interface NavItem {
   href: string
   label: string
   icon: React.ReactNode
-  roles?: ('gestor' | 'vendedor')[]
+  roles?: ('gestor' | 'vendedor' | 'diretor')[]
 }
 
 const ChartBarIcon = () => (
@@ -64,17 +64,24 @@ const PeopleIcon = () => (
   </svg>
 )
 
+const UploadIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+)
+
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: <ChartBarIcon /> },
   { href: '/kanban', label: 'Kanban', icon: <ViewColumnsIcon /> },
-  { href: '/leads', label: 'Leads', icon: <ListBulletIcon />, roles: ['gestor'] },
+  { href: '/leads', label: 'Leads', icon: <ListBulletIcon />, roles: ['gestor', 'diretor'] },
   { href: '/clientes', label: 'Carteira', icon: <UsersIcon /> },
   { href: '/geladeira', label: 'Geladeira', icon: <SnowflakeIcon /> },
   { href: '/metas', label: 'Metas', icon: <TrophyIcon /> },
   { href: '/templates', label: 'Templates', icon: <ChatIcon /> },
-  { href: '/monitor-script', label: 'Monitor Script', icon: <ClipboardIcon />, roles: ['gestor'] },
-  { href: '/usuarios', label: 'Equipe', icon: <PeopleIcon />, roles: ['gestor'] },
-  { href: '/configuracoes', label: 'Configurações', icon: <CogIcon />, roles: ['gestor'] },
+  { href: '/monitor-script', label: 'Monitor Script', icon: <ClipboardIcon />, roles: ['gestor', 'diretor'] },
+  { href: '/usuarios', label: 'Equipe', icon: <PeopleIcon />, roles: ['gestor', 'diretor'] },
+  { href: '/importar', label: 'Importar Clientes', icon: <UploadIcon />, roles: ['gestor', 'diretor'] },
+  { href: '/configuracoes', label: 'Configurações', icon: <CogIcon />, roles: ['gestor', 'diretor'] },
 ]
 
 interface SidebarProps {
@@ -86,7 +93,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { user, logout } = useAuth()
 
   const visibleItems = navItems.filter(
-    (item) => !item.roles || (user && item.roles.includes(user.role))
+    (item) => !item.roles || (user && item.roles.includes(user.role as 'gestor' | 'vendedor' | 'diretor'))
   )
 
   return (
@@ -112,7 +119,9 @@ export function Sidebar({ onClose }: SidebarProps) {
           </div>
           <div className="min-w-0">
             <div className="text-sm font-medium truncate">{user?.nome}</div>
-            <div className="text-xs text-gray-400 capitalize">{user?.role === 'gestor' ? 'Gestor' : 'Vendedor'}</div>
+            <div className="text-xs text-gray-400 capitalize">
+            {user?.role === 'diretor' ? 'Diretor' : user?.role === 'gestor' ? 'Gestor' : 'Vendedor'}
+          </div>
           </div>
         </div>
       </div>
