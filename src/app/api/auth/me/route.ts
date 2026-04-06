@@ -10,10 +10,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: tokenUser.id },
-      select: { id: true, nome: true, email: true, role: true, ativo: true, criadoEm: true, atualizadoEm: true },
-    })
+    // Use raw SQL to avoid Prisma enum cache issues with 'diretor' role
+    const users = await prisma.$queryRawUnsafe<Array<{
+      id: string; nome: string; email: string; role: string; ativo: boolean; criadoEm: Date; atualizadoEm: Date
+    }>>(
+      `SELECT id, nome, email, role::text, ativo, "criadoEm", "atualizadoEm" FROM "User" WHERE id = $1`,
+      tokenUser.id
+    )
+
+    const user = users[0]
 
     if (!user || !user.ativo) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
