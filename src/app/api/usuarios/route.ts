@@ -8,7 +8,7 @@ const createUserSchema = z.object({
   nome: z.string().min(2, 'Nome obrigatório'),
   email: z.string().email('E-mail inválido'),
   senha: z.string().min(6, 'Senha mínima 6 caracteres'),
-  role: z.enum(['gestor', 'vendedor']),
+  role: z.enum(['gestor', 'vendedor', 'diretor']),
   gestorId: z.string().optional().nullable(),
 })
 
@@ -16,16 +16,18 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getUserFromRequest(request)
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    if (user.role !== 'gestor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+    if (user.role !== 'gestor' && user.role !== 'diretor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-    // Return vendedores from this gestora's team
+    // Diretor sees all vendedores; gestor sees only their own team
     const vendedores = await prisma.user.findMany({
-      where: { gestorId: user.id },
+      where: user.role === 'diretor'
+        ? { role: 'vendedor' }
+        : { gestorId: user.id },
       select: { id: true, nome: true, email: true, role: true, ativo: true, criadoEm: true, gestorId: true },
       orderBy: { nome: 'asc' },
     })
 
-    // Also return all gestoras (for assignment when creating vendedores)
+    // Also return all gestores (for assignment when creating vendedores)
     const gestores = await prisma.user.findMany({
       where: { role: 'gestor', ativo: true },
       select: { id: true, nome: true, email: true },
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getUserFromRequest(request)
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    if (user.role !== 'gestor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+    if (user.role !== 'gestor' && user.role !== 'diretor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
     const body = await request.json()
     const result = createUserSchema.safeParse(body)

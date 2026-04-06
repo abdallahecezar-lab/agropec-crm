@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 
-const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/webhook']
+const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/webhook', '/api/setup/add-diretor']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -40,9 +40,9 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
-  // Gestor-only routes
-  const GESTOR_ONLY = ['/monitor-script']
-  if (GESTOR_ONLY.some((p) => pathname.startsWith(p)) && user.role !== 'gestor') {
+  // Gestor/diretor-only routes
+  const GESTOR_DIRETOR_ONLY = ['/monitor-script']
+  if (GESTOR_DIRETOR_ONLY.some((p) => pathname.startsWith(p)) && user.role !== 'gestor' && user.role !== 'diretor') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

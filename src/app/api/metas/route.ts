@@ -85,10 +85,12 @@ export async function GET(request: NextRequest) {
     const fimMes = endOfMonth(agora)
     const diasUteis = calcularDiasUteis(agora)
 
-    // If gestor, compute ranking for all vendors
-    if (user.role === 'gestor') {
+    // If gestor or diretor, compute ranking for vendors
+    if (user.role === 'gestor' || user.role === 'diretor') {
       const vendedores = await prisma.user.findMany({
-        where: { role: 'vendedor', ativo: true, gestorId: user.id },
+        where: user.role === 'diretor'
+          ? { role: 'vendedor', ativo: true }
+          : { role: 'vendedor', ativo: true, gestorId: user.id },
         select: { id: true, nome: true },
       })
 
