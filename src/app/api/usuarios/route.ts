@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     // Diretor sees all vendedores; gestor sees only their own team
     const vendedores = await prisma.user.findMany({
       where: user.role !== 'gestor'
-        ? { role: 'vendedor' }
-        : { gestorId: user.id },
+        ? { role: 'vendedor', ativo: true }
+        : { gestorId: user.id, ativo: true },
       select: { id: true, nome: true, email: true, role: true, ativo: true, criadoEm: true, gestorId: true },
       orderBy: { nome: 'asc' },
     })
