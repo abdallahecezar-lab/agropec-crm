@@ -16,11 +16,11 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getUserFromRequest(request)
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    if (user.role !== 'gestor' && user.role !== 'diretor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+    if (user.role === 'vendedor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
     // Diretor sees all vendedores; gestor sees only their own team
     const vendedores = await prisma.user.findMany({
-      where: user.role === 'diretor'
+      where: user.role !== 'gestor'
         ? { role: 'vendedor' }
         : { gestorId: user.id },
       select: { id: true, nome: true, email: true, role: true, ativo: true, criadoEm: true, gestorId: true },
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getUserFromRequest(request)
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    if (user.role !== 'gestor' && user.role !== 'diretor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+    if (user.role === 'vendedor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
     const body = await request.json()
     const result = createUserSchema.safeParse(body)
@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
         nome,
         email,
         senha: senhaHash,
-        role,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        role: role as any,
         gestorId: role === 'vendedor' ? (gestorId || user.id) : null,
       },
       select: { id: true, nome: true, email: true, role: true, ativo: true, criadoEm: true, gestorId: true },

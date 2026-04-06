@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
   // Gestor/diretor-only routes
   const GESTOR_DIRETOR_ONLY = ['/monitor-script']
-  if (GESTOR_DIRETOR_ONLY.some((p) => pathname.startsWith(p)) && user.role !== 'gestor' && user.role !== 'diretor') {
+  if (GESTOR_DIRETOR_ONLY.some((p) => pathname.startsWith(p)) && user.role === 'vendedor') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

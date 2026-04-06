@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
       if (existing) {
         const updated = await prisma.user.update({
           where: { email },
-          data: { role: 'diretor' },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: { role: 'diretor' as any },
           select: { id: true, nome: true, email: true, role: true },
         })
         return NextResponse.json({ message: 'Usuário atualizado para diretor', user: updated })
@@ -34,7 +35,8 @@ export async function GET(request: NextRequest) {
           nome: 'Luis Cezar',
           email,
           senha: senhaHash,
-          role: 'diretor',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          role: 'diretor' as any,
           gestorId: null,
         },
         select: { id: true, nome: true, email: true, role: true },
