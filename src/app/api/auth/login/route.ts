@@ -23,9 +23,20 @@ export async function POST(request: NextRequest) {
 
     const { email, senha } = result.data
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    })
+    // Use raw SQL to avoid Prisma enum cache issues with 'diretor' role
+    const users = await prisma.$queryRawUnsafe<Array<{
+      id: string
+      nome: string
+      email: string
+      senha: string
+      role: string
+      ativo: boolean
+    }>>(
+      `SELECT id, nome, email, senha, role::text, ativo FROM "User" WHERE email = $1`,
+      email.toLowerCase()
+    )
+
+    const user = users[0]
 
     if (!user || !user.ativo) {
       return NextResponse.json(
@@ -47,7 +58,7 @@ export async function POST(request: NextRequest) {
       id: user.id,
       email: user.email,
       nome: user.nome,
-      role: user.role,
+      role: user.role as 'gestor' | 'vendedor' | 'diretor',
     })
 
     const cookieConfig = setAuthCookie(token)
