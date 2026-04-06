@@ -53,6 +53,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'Usuário diretor criado com sucesso', user: { id: cuid, nome: 'Luis Cezar', email, role: 'diretor' } }, { status: 201 })
     }
 
+    if (action === 'deactivate-test-users') {
+      const testIds = [
+        'cmnffgclu0001ar8cmfymc8wl', // João Vendedor
+        'cmnffgcso0002ar8clxihfkr8', // Maria Vendas
+        'cmnffgczf0003ar8chklxezxc', // Pedro Silva
+        'cmnffgc7p0000ar8csk11mc4g', // Carlos Gestor
+      ]
+      const results = []
+      for (const id of testIds) {
+        await prisma.$executeRawUnsafe(`UPDATE "User" SET ativo = false WHERE id = $1`, id)
+        results.push(id)
+      }
+      return NextResponse.json({ message: 'Usuários de teste desativados', ids: results })
+    }
+
     return NextResponse.json({ error: 'Ação inválida' }, { status: 400 })
   } catch (error) {
     console.error('GET /api/webhook/setup error:', error)
