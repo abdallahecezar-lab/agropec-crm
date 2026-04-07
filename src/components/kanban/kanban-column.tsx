@@ -12,10 +12,11 @@ interface KanbanColumnProps {
   leads: Lead[]
   headerColor: string
   color: string
+  darkText?: boolean
   isOver?: boolean
 }
 
-export function KanbanColumn({ id, title, leads, headerColor, color, isOver }: KanbanColumnProps) {
+export function KanbanColumn({ id, title, leads, headerColor, color, darkText = false, isOver }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({ id })
 
   return (
@@ -29,8 +30,8 @@ export function KanbanColumn({ id, title, leads, headerColor, color, isOver }: K
       {/* Column header */}
       <div className={cn('px-4 py-3 rounded-t-xl', headerColor)}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-white text-sm">{title}</h3>
-          <span className="bg-white/30 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <h3 className={cn('font-semibold text-sm', darkText ? 'text-gray-900' : 'text-white')}>{title}</h3>
+          <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', darkText ? 'bg-black/15 text-gray-900' : 'bg-white/30 text-white')}>
             {leads.length}
           </span>
         </div>

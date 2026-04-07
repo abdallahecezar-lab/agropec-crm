@@ -165,6 +165,7 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
               leads={getLeadsForEtapa(etapa.id)}
               headerColor={etapa.headerColor}
               color={etapa.color}
+              darkText={'darkText' in etapa ? (etapa as any).darkText : false}
               isOver={overColumnId === etapa.id}
             />
           ))}

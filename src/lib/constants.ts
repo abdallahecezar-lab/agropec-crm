@@ -1,13 +1,13 @@
 export const ETAPAS_LEAD = [
-  { id: 'fez_contato', label: 'Fez Contato', color: 'bg-blue-100 border-blue-300', headerColor: 'bg-blue-500' },
-  { id: 'proposta_enviada', label: 'Proposta Enviada', color: 'bg-yellow-100 border-yellow-300', headerColor: 'bg-yellow-500' },
-  { id: 'negociacao', label: 'Negociação', color: 'bg-orange-100 border-orange-300', headerColor: 'bg-orange-500' },
-  { id: 'chamar_depois', label: 'Chamar Depois', color: 'bg-purple-100 border-purple-300', headerColor: 'bg-purple-500' },
-  { id: 'correios', label: 'Correios', color: 'bg-sky-100 border-sky-300', headerColor: 'bg-sky-500' },
-  { id: 'comprou', label: 'Comprou', color: 'bg-green-100 border-green-300', headerColor: 'bg-green-500' },
-  { id: 'voltou', label: 'Voltou', color: 'bg-rose-100 border-rose-300', headerColor: 'bg-rose-500' },
-  { id: 'desqualificado', label: 'Desqualificado', color: 'bg-red-100 border-red-300', headerColor: 'bg-red-500' },
-  { id: 'geladeira', label: 'Geladeira', color: 'bg-slate-100 border-slate-300', headerColor: 'bg-slate-500' },
+  { id: 'fez_contato', label: 'Fez Contato', color: 'bg-blue-100 border-blue-300', headerColor: 'bg-blue-600', darkText: false },
+  { id: 'proposta_enviada', label: 'Proposta Enviada', color: 'bg-yellow-100 border-yellow-300', headerColor: 'bg-yellow-400', darkText: true },
+  { id: 'negociacao', label: 'Negociação', color: 'bg-orange-100 border-orange-300', headerColor: 'bg-orange-400', darkText: true },
+  { id: 'chamar_depois', label: 'Chamar Depois', color: 'bg-purple-100 border-purple-300', headerColor: 'bg-purple-600', darkText: false },
+  { id: 'correios', label: 'Correios', color: 'bg-sky-100 border-sky-300', headerColor: 'bg-sky-500', darkText: false },
+  { id: 'comprou', label: 'Comprou', color: 'bg-green-100 border-green-300', headerColor: 'bg-green-600', darkText: false },
+  { id: 'voltou', label: 'Voltou', color: 'bg-rose-100 border-rose-300', headerColor: 'bg-rose-600', darkText: false },
+  { id: 'desqualificado', label: 'Desqualificado', color: 'bg-red-100 border-red-300', headerColor: 'bg-red-600', darkText: false },
+  { id: 'geladeira', label: 'Geladeira', color: 'bg-slate-100 border-slate-300', headerColor: 'bg-slate-500', darkText: false },
 ] as const
 
 export const SCRIPT_ITEMS = [

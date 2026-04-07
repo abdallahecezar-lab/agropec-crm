@@ -29,12 +29,12 @@ export async function GET(request: NextRequest) {
     if (user.role === 'vendedor') {
       where.vendedorId = user.id
     } else if (user.role === 'gestor') {
-      // Get IDs of vendedores in this gestor's team
+      // Get IDs of vendedores in this gestor's team + the gestor's own leads
       const equipe = await prisma.user.findMany({
         where: { gestorId: user.id, role: 'vendedor' },
         select: { id: true },
       })
-      const ids = equipe.map((v) => v.id)
+      const ids = [...equipe.map((v) => v.id), user.id]
       if (vendedorId && ids.includes(vendedorId)) {
         where.vendedorId = vendedorId
       } else {
