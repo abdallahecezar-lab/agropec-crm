@@ -3,7 +3,7 @@
 import { useAuth } from '@/hooks/use-auth'
 import { Header } from '@/components/layout/header'
 import { VendedorDashboard } from '@/components/dashboard/vendedor-dashboard'
-import { GestorDashboard } from '@/components/dashboard/gestor-dashboard'
+import { DiretorDashboard } from '@/components/dashboard/diretor-dashboard'
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
@@ -16,11 +16,13 @@ export default function DashboardPage() {
     )
   }
 
+  const isGestorOuDiretor = user?.role === 'gestor' || user?.role === 'diretor'
+
   return (
     <div>
       <Header title="Dashboard" />
       <div className="p-4 lg:p-6">
-        {user?.role === 'gestor' ? <GestorDashboard /> : <VendedorDashboard />}
+        {isGestorOuDiretor ? <DiretorDashboard /> : <VendedorDashboard />}
       </div>
     </div>
   )
