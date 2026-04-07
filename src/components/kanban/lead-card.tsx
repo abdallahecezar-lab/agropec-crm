@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useRef } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Badge } from '@/components/ui/badge'
@@ -10,9 +11,39 @@ import Link from 'next/link'
 interface LeadCardProps {
   lead: Lead
   isDragging?: boolean
+  onUpdated?: (lead: Lead) => void
 }
 
-export function LeadCard({ lead, isDragging }: LeadCardProps) {
+export function LeadCard({ lead, isDragging, onUpdated }: LeadCardProps) {
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState(lead.nomeCliente)
+  const [saving, setSaving] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const saveName = async () => {
+    const trimmed = nameValue.trim()
+    if (!trimmed || trimmed === lead.nomeCliente) {
+      setEditingName(false)
+      setNameValue(lead.nomeCliente)
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nomeCliente: trimmed }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        onUpdated?.(data.lead)
+        setNameValue(trimmed)
+      }
+    } finally {
+      setSaving(false)
+      setEditingName(false)
+    }
+  }
   const {
     attributes,
     listeners,
@@ -48,9 +79,58 @@ export function LeadCard({ lead, isDragging }: LeadCardProps) {
       {...listeners}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="min-w-0">
-          <p className="font-medium text-sm text-gray-900 truncate">{lead.nomeCliente}</p>
-          {lead.produto && (
+        <div className="min-w-0 flex-1">
+          {editingName ? (
+            <div
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                ref={inputRef}
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveName()
+                  if (e.key === 'Escape') { setEditingName(false); setNameValue(lead.nomeCliente) }
+                }}
+                autoFocus
+                disabled={saving}
+                className="w-full text-sm font-medium text-gray-900 border border-green-400 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-green-400"
+              />
+              <div className="flex gap-2 mt-1">
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); saveName() }}
+                  disabled={saving}
+                  className="text-xs text-green-600 font-medium hover:text-green-800"
+                >
+                  {saving ? '...' : '✓ Salvar'}
+                </button>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); setEditingName(false); setNameValue(lead.nomeCliente) }}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  ✕ Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 group">
+              <p className="font-medium text-sm text-gray-900 truncate">{nameValue}</p>
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); setEditingName(true) }}
+                className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-opacity"
+                title="Editar nome"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
+          )}
+          {lead.produto && !editingName && (
             <p className="text-xs text-gray-500 truncate mt-0.5">{lead.produto.nome}</p>
           )}
         </div>

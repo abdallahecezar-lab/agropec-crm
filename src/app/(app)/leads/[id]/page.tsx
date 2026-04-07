@@ -31,6 +31,9 @@ export default function LeadDetailPage() {
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [etapaDestino, setEtapaDestino] = useState<EtapaLead>('chamar_depois')
   const [activeTab, setActiveTab] = useState<'info' | 'followups' | 'checklist' | 'historico'>('info')
+  const [editingInfo, setEditingInfo] = useState(false)
+  const [editForm, setEditForm] = useState({ nomeCliente: '', whatsapp: '', observacoes: '' })
+  const [editSaving, setEditSaving] = useState(false)
 
   const fetchLead = async () => {
     try {
@@ -71,6 +74,38 @@ export default function LeadDetailPage() {
       }
       return { ...prev, checklistItems: [...items, item] }
     })
+  }
+
+  const handleStartEdit = () => {
+    if (!lead) return
+    setEditForm({
+      nomeCliente: lead.nomeCliente,
+      whatsapp: lead.whatsapp,
+      observacoes: lead.observacoes || '',
+    })
+    setEditingInfo(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!lead) return
+    setEditSaving(true)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nomeCliente: editForm.nomeCliente.trim(),
+          whatsapp: editForm.whatsapp.trim().replace(/\D/g, ''),
+          observacoes: editForm.observacoes.trim(),
+        }),
+      })
+      if (res.ok) {
+        await fetchLead()
+        setEditingInfo(false)
+      }
+    } finally {
+      setEditSaving(false)
+    }
   }
 
   const handleStageMoved = async (data: any) => {
@@ -260,7 +295,69 @@ export default function LeadDetailPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
           {activeTab === 'info' && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Dados do Lead</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">Dados do Lead</h3>
+                {!editingInfo ? (
+                  <button
+                    onClick={handleStartEdit}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Editar
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setEditingInfo(false)}
+                      disabled={editSaving}
+                      className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={editSaving}
+                      className="text-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 px-3 py-1.5 rounded-lg font-medium"
+                    >
+                      {editSaving ? 'Salvando...' : '✓ Salvar'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {editingInfo ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Nome do Cliente</label>
+                    <input
+                      value={editForm.nomeCliente}
+                      onChange={(e) => setEditForm((f) => ({ ...f, nomeCliente: e.target.value }))}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">WhatsApp</label>
+                    <input
+                      value={editForm.whatsapp}
+                      onChange={(e) => setEditForm((f) => ({ ...f, whatsapp: e.target.value }))}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                      placeholder="Ex: 65991001001"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Observações</label>
+                    <textarea
+                      value={editForm.observacoes}
+                      onChange={(e) => setEditForm((f) => ({ ...f, observacoes: e.target.value }))}
+                      rows={3}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
+                      placeholder="Anotações sobre o lead..."
+                    />
+                  </div>
+                </div>
+              ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-gray-500 uppercase tracking-wide">Cliente</label>
@@ -301,7 +398,8 @@ export default function LeadDetailPage() {
                   </div>
                 )}
               </div>
-              {lead.observacoes && (
+              )}
+              {!editingInfo && lead.observacoes && (
                 <div>
                   <label className="text-xs text-gray-500 uppercase tracking-wide">Observações</label>
                   <p className="text-sm text-gray-700 mt-1 p-3 bg-gray-50 rounded-lg">{lead.observacoes}</p>

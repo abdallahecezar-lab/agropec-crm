@@ -49,6 +49,10 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   )
 
+  const handleLeadUpdated = (updatedLead: Lead) => {
+    setLeads((prev) => prev.map((l) => l.id === updatedLead.id ? { ...l, ...updatedLead } : l))
+  }
+
   const activeLeads = leads.filter((l) => l.statusLead === 'ativo' || l.statusLead === 'geladeira' || l.statusLead === 'convertido' || l.statusLead === 'desqualificado')
 
   const getLeadsForEtapa = useCallback(
@@ -167,6 +171,7 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
               color={etapa.color}
               darkText={'darkText' in etapa ? (etapa as any).darkText : false}
               isOver={overColumnId === etapa.id}
+              onLeadUpdated={handleLeadUpdated}
             />
           ))}
         </div>
