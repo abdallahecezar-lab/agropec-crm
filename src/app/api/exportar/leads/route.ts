@@ -14,13 +14,6 @@ const ETAPA_LABEL: Record<string, string> = {
   geladeira: 'Geladeira',
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  ativo: 'Ativo',
-  convertido: 'Convertido',
-  desqualificado: 'Desqualificado',
-  geladeira: 'Geladeira',
-}
-
 function formatDate(date: Date | null | undefined): string {
   if (!date) return ''
   return new Date(date).toLocaleDateString('pt-BR')
@@ -41,65 +34,94 @@ export async function GET(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
     const { searchParams } = new URL(request.url)
+    const etapa = searchParams.get('etapa')
+    const origem = searchParams.get('origem')
     const vendedorId = searchParams.get('vendedorId')
+    const busca = searchParams.get('busca')
+    const chegouEmInicio = searchParams.get('chegouEmInicio')
+    const chegouEmFim = searchParams.get('chegouEmFim')
+    const ultimoContatoInicio = searchParams.get('ultimoContatoInicio')
+    const ultimoContatoFim = searchParams.get('ultimoContatoFim')
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {}
 
     if (user.role === 'vendedor') {
       where.vendedorId = user.id
-    } else if (vendedorId) {
+    } else if (user.role === 'gestor') {
+      const equipe = await prisma.user.findMany({
+        where: { gestorId: user.id, role: 'vendedor' },
+        select: { id: true },
+      })
+      const ids = [...equipe.map((v) => v.id), user.id]
+      if (vendedorId && ids.includes(vendedorId)) {
+        where.vendedorId = vendedorId
+      } else {
+        where.vendedorId = { in: ids }
+      }
+    } else if (user.role === 'diretor' && vendedorId) {
       where.vendedorId = vendedorId
     }
-    // gestor/diretor sem filtro = todos
+
+    if (etapa) where.etapa = etapa
+    if (origem) where.origem = origem
+
+    if (chegouEmInicio || chegouEmFim) {
+      where.chegouEm = {}
+      if (chegouEmInicio) where.chegouEm.gte = new Date(chegouEmInicio)
+      if (chegouEmFim) {
+        const fim = new Date(chegouEmFim)
+        fim.setHours(23, 59, 59, 999)
+        where.chegouEm.lte = fim
+      }
+    }
+
+    if (ultimoContatoInicio || ultimoContatoFim) {
+      const fw: any = {}
+      if (ultimoContatoInicio) fw.gte = new Date(ultimoContatoInicio)
+      if (ultimoContatoFim) {
+        const fim = new Date(ultimoContatoFim)
+        fim.setHours(23, 59, 59, 999)
+        fw.lte = fim
+      }
+      where.followups = { some: { criadoEm: fw } }
+    }
 
     const leads = await prisma.lead.findMany({
       where,
       include: {
         vendedor: { select: { nome: true } },
-        produto: { select: { nome: true } },
+        followups: { orderBy: { criadoEm: 'desc' }, take: 1, select: { criadoEm: true } },
       },
       orderBy: { chegouEm: 'desc' },
       take: 5000,
     })
 
-    // Monta CSV
-    const header = [
-      'Nome do Cliente',
-      'WhatsApp',
-      'Vendedor',
-      'Etapa',
-      'Status',
-      'Produto',
-      'Origem',
-      'Chegou Em',
-      'Valor Bruto',
-      'Valor Líquido',
-      'Forma de Pagamento',
-      'Comprou Em',
-      'Motivo Desqualificação',
-    ].join(',')
+    // Filtro local de busca por nome/whatsapp
+    const resultado = busca
+      ? leads.filter(
+          (l) =>
+            l.nomeCliente.toLowerCase().includes(busca.toLowerCase()) ||
+            l.whatsapp.includes(busca)
+        )
+      : leads
 
-    const rows = leads.map((l) =>
+    const header = ['Nome', 'Telefone', 'Data de Entrada', 'Último Contato', 'Origem', 'Status no Kanban', 'Vendedor'].join(',')
+
+    const rows = resultado.map((l) =>
       [
         escapeCSV(l.nomeCliente),
         escapeCSV(l.whatsapp),
-        escapeCSV(l.vendedor.nome),
-        escapeCSV(ETAPA_LABEL[l.etapa] || l.etapa),
-        escapeCSV(STATUS_LABEL[l.statusLead] || l.statusLead),
-        escapeCSV(l.produto?.nome || ''),
-        escapeCSV(l.origem === 'rastreado' ? 'Rastreado' : 'Não Rastreado'),
         escapeCSV(formatDate(l.chegouEm)),
-        escapeCSV(l.valorBruto ?? ''),
-        escapeCSV(l.valorLiquido ?? ''),
-        escapeCSV(l.formaPagamento || ''),
-        escapeCSV(formatDate(l.comprouEm)),
-        escapeCSV(l.motivoDesqualificacao || ''),
+        escapeCSV(formatDate(l.followups?.[0]?.criadoEm)),
+        escapeCSV(l.origem === 'rastreado' ? 'Meta Ads' : 'Direto'),
+        escapeCSV(ETAPA_LABEL[l.etapa] || l.etapa),
+        escapeCSV(l.vendedor?.nome || ''),
       ].join(',')
     )
 
     const csv = [header, ...rows].join('\n')
-    const filename = `leads-${user.nome.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`
+    const filename = `leads-${new Date().toISOString().slice(0, 10)}.csv`
 
     return new NextResponse(csv, {
       headers: {
