@@ -31,8 +31,8 @@ export function KanbanColumn({ id, title, leads, headerColor, color, darkText = 
       {/* Column header */}
       <div className={cn('px-4 py-3 rounded-t-xl', headerColor)}>
         <div className="flex items-center justify-between">
-          <h3 className={cn('font-semibold text-sm', darkText ? 'text-gray-900' : 'text-white')}>{title}</h3>
-          <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', darkText ? 'bg-black/15 text-gray-900' : 'bg-white/30 text-white')}>
+          <h3 className="font-semibold text-sm text-gray-900">{title}</h3>
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-black/20 text-gray-900">
             {leads.length}
           </span>
         </div>
