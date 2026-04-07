@@ -122,7 +122,9 @@ function EquipeDrilldown({
   const vendedoresOrdenados = dados
     ? [...dados.vendedores].sort((a, b) => {
         const mult = asc ? 1 : -1
-        return (a[ordem] as number - (b[ordem] as number)) * mult
+        const va = Number(a[ordem]) || 0
+        const vb = Number(b[ordem]) || 0
+        return (va - vb) * mult
       })
     : []
 

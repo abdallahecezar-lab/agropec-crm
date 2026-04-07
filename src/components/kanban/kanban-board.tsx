@@ -53,7 +53,7 @@ export function KanbanBoard({ leadsIniciais, onLeadMoved }: KanbanBoardProps) {
     setLeads((prev) => prev.map((l) => l.id === updatedLead.id ? { ...l, ...updatedLead } : l))
   }
 
-  const activeLeads = leads.filter((l) => l.statusLead === 'ativo' || l.statusLead === 'geladeira' || l.statusLead === 'convertido' || l.statusLead === 'desqualificado')
+  const activeLeads = leads.filter((l) => l.statusLead === 'ativo' || l.statusLead === 'geladeira')
 
   const getLeadsForEtapa = useCallback(
     (etapa: string) => activeLeads.filter((l) => l.etapa === etapa),

@@ -180,7 +180,7 @@ export default function LeadDetailPage() {
                   </svg>
                   {lead.produto?.nome || 'Produto não definido'}
                 </span>
-                {lead.vendedor && user?.role === 'gestor' && (
+                {lead.vendedor && (user?.role === 'gestor' || user?.role === 'diretor') && (
                   <span className="flex items-center gap-1.5">
                     <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -201,7 +201,9 @@ export default function LeadDetailPage() {
                 <option value="proposta_enviada">Proposta Enviada</option>
                 <option value="negociacao">Negociação</option>
                 <option value="chamar_depois">Chamar Depois</option>
+                <option value="correios">Correios</option>
                 <option value="comprou">Comprou</option>
+                <option value="voltou">Voltou</option>
                 <option value="desqualificado">Desqualificado</option>
                 <option value="geladeira">Geladeira</option>
               </select>
