@@ -16,6 +16,11 @@ interface Config {
   diasReativacaoGeladeira3: string
 }
 
+interface MetaConfig {
+  metaVerifyToken: string
+  metaAccessToken: string
+}
+
 interface Produto {
   id: string
   nome: string
@@ -34,6 +39,12 @@ export default function ConfiguracoesPage() {
     diasReativacaoGeladeira2: '15',
     diasReativacaoGeladeira3: '30',
   })
+  const [metaConfig, setMetaConfig] = useState<MetaConfig>({
+    metaVerifyToken: 'agropec-meta-2024',
+    metaAccessToken: '',
+  })
+  const [savingMeta, setSavingMeta] = useState(false)
+  const [savedMetaMsg, setSavedMetaMsg] = useState('')
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -57,17 +68,22 @@ export default function ConfiguracoesPage() {
 
         if (configRes.ok) {
           const data = await configRes.json()
-          if (data.configuracoes) {
+          const lista: Array<{ chave: string; valor: string }> = data.lista || data.configuracoes || []
+          if (lista.length > 0) {
             const mapped: Partial<Config> = {}
-            data.configuracoes.forEach((c: { chave: string; valor: string }) => {
+            const mappedMeta: Partial<MetaConfig> = {}
+            lista.forEach((c) => {
               if (c.chave === 'janela_trabalho_inicio') mapped.janelaTrabalhInicio = c.valor
               if (c.chave === 'janela_trabalho_fim') mapped.janelaTrabalhoFim = c.valor
               if (c.chave === 'meta_mensal_liquida') mapped.metaMensalLiquida = c.valor
               if (c.chave === 'dias_reativacao_1') mapped.diasReativacaoGeladeira1 = c.valor
               if (c.chave === 'dias_reativacao_2') mapped.diasReativacaoGeladeira2 = c.valor
               if (c.chave === 'dias_reativacao_3') mapped.diasReativacaoGeladeira3 = c.valor
+              if (c.chave === 'meta_verify_token') mappedMeta.metaVerifyToken = c.valor
+              if (c.chave === 'meta_access_token') mappedMeta.metaAccessToken = c.valor
             })
             setConfig((prev) => ({ ...prev, ...mapped }))
+            setMetaConfig((prev) => ({ ...prev, ...mappedMeta }))
           }
         }
 
@@ -82,6 +98,27 @@ export default function ConfiguracoesPage() {
 
     if (user) fetchData()
   }, [user])
+
+  const handleSaveMeta = async () => {
+    setSavingMeta(true)
+    setSavedMetaMsg('')
+    try {
+      await fetch('/api/configuracoes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          configs: {
+            meta_verify_token: metaConfig.metaVerifyToken,
+            meta_access_token: metaConfig.metaAccessToken,
+          },
+        }),
+      })
+      setSavedMetaMsg('Configurações do Meta salvas!')
+      setTimeout(() => setSavedMetaMsg(''), 3000)
+    } finally {
+      setSavingMeta(false)
+    }
+  }
 
   const handleSaveConfig = async () => {
     setSaving(true)
@@ -288,6 +325,66 @@ export default function ConfiguracoesPage() {
                 Adicionar
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Meta Leads Integration */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h2 className="font-bold text-gray-900 mb-1">Integração Meta Lead Ads</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Configure para que novos leads do Facebook/Instagram entrem automaticamente no CRM.
+          </p>
+
+          <div className="bg-gray-50 rounded-lg p-3 mb-4 border border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 mb-1">URL do Webhook (cole no Meta Business Suite)</p>
+            <code className="text-xs text-green-700 break-all">
+              https://agropec-crm-production.up.railway.app/api/webhook/meta
+            </code>
+          </div>
+
+          <div className="space-y-3 mb-4">
+            <Input
+              label="Token de Verificação (Verify Token)"
+              value={metaConfig.metaVerifyToken}
+              onChange={(e) => setMetaConfig((p) => ({ ...p, metaVerifyToken: e.target.value }))}
+              placeholder="agropec-meta-2024"
+            />
+            <p className="text-xs text-gray-500 -mt-2">
+              Copie esse token e cole no campo "Verify Token" do Meta Business Suite.
+            </p>
+
+            <Input
+              label="Token de Acesso Meta (Access Token)"
+              value={metaConfig.metaAccessToken}
+              onChange={(e) => setMetaConfig((p) => ({ ...p, metaAccessToken: e.target.value }))}
+              placeholder="EAAYhao..."
+              type="password"
+            />
+            <p className="text-xs text-gray-500 -mt-2">
+              Token do Meta Business Suite para buscar os dados do lead (nome, WhatsApp).
+            </p>
+          </div>
+
+          {savedMetaMsg && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 mb-3">
+              ✅ {savedMetaMsg}
+            </div>
+          )}
+
+          <Button variant="primary" onClick={handleSaveMeta} loading={savingMeta} className="w-full">
+            Salvar integração Meta
+          </Button>
+
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs font-semibold text-blue-800 mb-2">Como configurar no Meta Business Suite:</p>
+            <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+              <li>Acesse business.facebook.com → Configurações → Webhooks</li>
+              <li>Clique em "Adicionar assinatura" → selecione "Página"</li>
+              <li>Cole a URL do webhook acima</li>
+              <li>Cole o Token de Verificação acima</li>
+              <li>Marque o campo <strong>leadgen</strong></li>
+              <li>Clique em Verificar e Salvar</li>
+            </ol>
           </div>
         </div>
 
