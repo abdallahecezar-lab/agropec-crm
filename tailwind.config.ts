@@ -49,6 +49,20 @@ const config: Config = {
       },
     },
   },
+  safelist: [
+    // Cores do Kanban — headers (garantidas em produção)
+    'bg-blue-300', 'bg-yellow-300', 'bg-orange-300', 'bg-purple-300',
+    'bg-sky-300', 'bg-green-400', 'bg-rose-300', 'bg-red-300', 'bg-slate-300',
+    // Cores de fundo das colunas
+    'bg-blue-100', 'bg-yellow-100', 'bg-orange-100', 'bg-purple-100',
+    'bg-sky-100', 'bg-green-100', 'bg-rose-100', 'bg-red-100', 'bg-slate-100',
+    // Bordas das colunas
+    'border-blue-300', 'border-yellow-300', 'border-orange-300', 'border-purple-300',
+    'border-sky-300', 'border-green-300', 'border-rose-300', 'border-red-300', 'border-slate-300',
+    // Texto escuro/claro nos headers
+    'text-gray-900', 'text-white',
+    'bg-black/15', 'bg-white/30',
+  ],
   plugins: [],
 }
 
