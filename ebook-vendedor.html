@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia do Vendedor — Agropec Brasil CRM</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; background: #fff; }
+
+  .capa {
+    background: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+  }
+  .capa .logo {
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; margin-bottom: 32px;
+  }
+  .capa h1 { font-size: 42px; font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+  .capa h2 { font-size: 22px; font-weight: 400; opacity: 0.85; margin-bottom: 48px; }
+  .capa .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    padding: 10px 28px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .capa .versao { margin-top: 60px; opacity: 0.5; font-size: 13px; }
+
+  .sumario {
+    padding: 60px 80px;
+    page-break-after: always;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .sumario h2 { font-size: 28px; font-weight: 700; color: #166534; margin-bottom: 32px; border-bottom: 3px solid #16a34a; padding-bottom: 12px; }
+  .sumario ol { list-style: none; counter-reset: item; }
+  .sumario ol li {
+    counter-increment: item;
+    display: flex; align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 16px;
+  }
+  .sumario ol li::before {
+    content: counter(item) ".";
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 18px;
+    width: 36px;
+    flex-shrink: 0;
+  }
+  .sumario ol li span { color: #6b7280; margin-left: auto; font-size: 14px; }
+
+  .capitulo {
+    padding: 60px 80px;
+    max-width: 800px;
+    margin: 0 auto;
+    page-break-before: always;
+  }
+  .cap-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #16a34a;
+  }
+  .cap-num {
+    background: #16a34a;
+    color: white;
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .cap-header h2 { font-size: 28px; font-weight: 700; color: #1a1a1a; }
+
+  h3 { font-size: 19px; font-weight: 700; color: #166534; margin: 32px 0 12px; }
+  h4 { font-size: 16px; font-weight: 600; color: #374151; margin: 20px 0 8px; }
+  p { font-size: 15px; line-height: 1.75; color: #374151; margin-bottom: 14px; }
+  ul, ol { padding-left: 24px; margin-bottom: 14px; }
+  ul li, ol li { font-size: 15px; line-height: 1.75; color: #374151; margin-bottom: 6px; }
+
+  .dica {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+  }
+  .dica strong { color: #166534; }
+
+  .atencao {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+  }
+  .atencao strong { color: #92400e; }
+
+  .passo {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    align-items: flex-start;
+  }
+  .passo-num {
+    background: #16a34a;
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .passo-texto { flex: 1; }
+  .passo-texto strong { color: #1a1a1a; display: block; margin-bottom: 4px; }
+  .passo-texto p { margin: 0; }
+
+  .etapa-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .etapa-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .etapa-desc { font-size: 14px; color: #6b7280; }
+
+  .tabela {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .tabela th {
+    background: #166534;
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .tabela td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #374151;
+  }
+  .tabela tr:nth-child(even) td { background: #f9fafb; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .card h4 { margin-top: 0; color: #166534; }
+  .card p { margin: 0; font-size: 14px; }
+
+  .rodape {
+    background: #1a1a1a;
+    color: #9ca3af;
+    text-align: center;
+    padding: 40px;
+    margin-top: 80px;
+    font-size: 13px;
+    page-break-before: always;
+  }
+  .rodape strong { color: white; }
+
+  @media print {
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .capa { min-height: auto; padding: 100px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="capa">
+  <div class="logo">🌿</div>
+  <h1>Guia do Vendedor</h1>
+  <h2>Como usar o CRM Agropec Brasil</h2>
+  <div class="badge">Manual Completo · 2026</div>
+  <div class="versao">Agropec Brasil · Sistema de Gestão de Vendas</div>
+</div>
+
+<!-- SUMÁRIO -->
+<div class="sumario">
+  <h2>Sumário</h2>
+  <ol>
+    <li>O que é o CRM e para que serve <span>Pág. 3</span></li>
+    <li>Como fazer o login <span>Pág. 4</span></li>
+    <li>Conhecendo o menu <span>Pág. 5</span></li>
+    <li>Dashboard — seu resumo do dia <span>Pág. 6</span></li>
+    <li>Kanban — seus leads em cards <span>Pág. 7</span></li>
+    <li>Leads — lista completa <span>Pág. 8</span></li>
+    <li>Como registrar um novo lead <span>Pág. 9</span></li>
+    <li>Como avançar um lead de etapa <span>Pág. 10</span></li>
+    <li>Followups — registrando tentativas de contato <span>Pág. 11</span></li>
+    <li>Script de vendas — checklist <span>Pág. 12</span></li>
+    <li>Geladeira — leads em pausa <span>Pág. 13</span></li>
+    <li>Carteira de Clientes <span>Pág. 14</span></li>
+    <li>Metas e Comissões <span>Pág. 15</span></li>
+    <li>Dúvidas frequentes <span>Pág. 16</span></li>
+  </ol>
+</div>
+
+<!-- CAPÍTULO 1 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">1</div>
+    <h2>O que é o CRM e para que serve</h2>
+  </div>
+
+  <p>O <strong>CRM Agropec Brasil</strong> é o sistema que centraliza todo o trabalho de vendas da equipe. Em vez de controlar seus leads em caderninho, WhatsApp ou planilha separada, tudo fica registrado em um único lugar — organizado, fácil de acessar e visível para sua supervisora.</p>
+
+  <h3>Por que usar o CRM?</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>📋 Organização</h4>
+      <p>Todos os seus leads ficam em um só lugar, sem risco de perder contato ou esquecer de retornar alguém.</p>
+    </div>
+    <div class="card">
+      <h4>📱 Leads automáticos</h4>
+      <p>Quando alguém clica no anúncio do WhatsApp, o lead já entra no sistema automaticamente. Você não precisa cadastrar manualmente.</p>
+    </div>
+    <div class="card">
+      <h4>💰 Suas metas</h4>
+      <p>Acompanhe em tempo real quanto você vendeu no mês e qual comissão você vai receber.</p>
+    </div>
+    <div class="card">
+      <h4>🎯 Foco no certo</h4>
+      <p>O sistema avisa quais leads estão atrasados e quem precisa ser contatado hoje.</p>
+    </div>
+  </div>
+
+  <div class="dica">
+    <strong>💡 Importante:</strong> Tudo que você registrar aqui fica salvo. Sua supervisora consegue ver o andamento da equipe, mas isso é para te ajudar — não para te vigiar. Quanto mais atualizado estiver, melhor o suporte que você recebe.
+  </div>
+</div>
+
+<!-- CAPÍTULO 2 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">2</div>
+    <h2>Como fazer o login</h2>
+  </div>
+
+  <p>Acesse pelo celular ou computador, qualquer navegador (Chrome, Safari, Firefox).</p>
+
+  <div class="passo">
+    <div class="passo-num">1</div>
+    <div class="passo-texto">
+      <strong>Abra o endereço do sistema</strong>
+      <p>No navegador, acesse: <strong>agropec-crm-production.up.railway.app</strong></p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">2</div>
+    <div class="passo-texto">
+      <strong>Digite seu e-mail e senha</strong>
+      <p>Use o e-mail e a senha que sua supervisora te passou. Na primeira vez, a senha padrão é <strong>Agropec2024</strong>.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">3</div>
+    <div class="passo-texto">
+      <strong>Clique em Entrar</strong>
+      <p>Você será redirecionada para o Dashboard com um resumo do seu dia.</p>
+    </div>
+  </div>
+
+  <div class="atencao">
+    <strong>⚠️ Atenção:</strong> Não compartilhe sua senha com ninguém. Cada vendedora tem seu próprio acesso e enxerga apenas os próprios leads e clientes.
+  </div>
+
+  <h3>Esqueceu a senha?</h3>
+  <p>Fale com sua supervisora para resetar. Ela pode criar uma nova senha para você pelo painel da gestora.</p>
+</div>
+
+<!-- CAPÍTULO 3 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">3</div>
+    <h2>Conhecendo o menu</h2>
+  </div>
+
+  <p>No lado esquerdo da tela fica o menu de navegação. Cada item te leva para uma área diferente do sistema:</p>
+
+  <table class="tabela">
+    <tr>
+      <th>Menu</th>
+      <th>O que é</th>
+    </tr>
+    <tr>
+      <td><strong>📊 Dashboard</strong></td>
+      <td>Resumo do seu desempenho: leads, metas, alertas do dia</td>
+    </tr>
+    <tr>
+      <td><strong>🗂️ Kanban</strong></td>
+      <td>Seus leads em colunas visuais por etapa (igual a um quadro de post-its)</td>
+    </tr>
+    <tr>
+      <td><strong>📋 Leads</strong></td>
+      <td>Lista completa de todos os seus leads com filtros</td>
+    </tr>
+    <tr>
+      <td><strong>👥 Carteira</strong></td>
+      <td>Seus clientes que já compraram — para fazer pós-venda e recompra</td>
+    </tr>
+    <tr>
+      <td><strong>❄️ Geladeira</strong></td>
+      <td>Leads que pediram para chamar depois ou que ficaram parados</td>
+    </tr>
+    <tr>
+      <td><strong>🏆 Metas</strong></td>
+      <td>Seu faturamento do mês e comissão estimada</td>
+    </tr>
+    <tr>
+      <td><strong>💬 Templates</strong></td>
+      <td>Mensagens prontas para enviar no WhatsApp</td>
+    </tr>
+  </table>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> No celular, o menu pode estar escondido. Procure o ícone de três linhas (☰) no canto superior para abri-lo.
+  </div>
+</div>
+
+<!-- CAPÍTULO 4 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">4</div>
+    <h2>Dashboard — seu resumo do dia</h2>
+  </div>
+
+  <p>O Dashboard é a primeira tela que aparece ao fazer login. Ele mostra um panorama rápido do que está acontecendo com seus leads e metas.</p>
+
+  <h3>O que você vai ver</h3>
+  <ul>
+    <li><strong>Leads ativos:</strong> total de contatos em aberto no momento</li>
+    <li><strong>Faturamento do mês:</strong> soma de todas as suas vendas no mês atual</li>
+    <li><strong>Meta atingida:</strong> percentual da sua meta cumprida</li>
+    <li><strong>Leads atrasados:</strong> contatos que precisam de atenção urgente</li>
+    <li><strong>Followups de hoje:</strong> leads agendados para contato hoje</li>
+  </ul>
+
+  <h3>Alertas que você deve observar</h3>
+  <div class="atencao">
+    <strong>🔴 Lead atrasado:</strong> Um lead estava agendado para ser contatado e você ainda não registrou nenhuma ação. Aja logo!
+  </div>
+  <div class="dica">
+    <strong>📅 Chamar hoje:</strong> Esses leads foram agendados por você para hoje. São sua prioridade do dia.
+  </div>
+</div>
+
+<!-- CAPÍTULO 5 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">5</div>
+    <h2>Kanban — seus leads em cards</h2>
+  </div>
+
+  <p>O Kanban é a forma mais visual de gerenciar seus leads. Cada coluna representa uma etapa da venda. Você consegue arrastar os cards de uma coluna para outra conforme o lead avança.</p>
+
+  <h3>As etapas do funil</h3>
+
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#dbeafe;color:#1e40af">Fez Contato</div>
+    <div class="etapa-desc">O lead acabou de chegar. Ainda está no primeiro contato, respondeu pela primeira vez.</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#ede9fe;color:#5b21b6">Proposta Enviada</div>
+    <div class="etapa-desc">Você já apresentou o produto e enviou o preço ou proposta.</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#fef3c7;color:#92400e">Negociação</div>
+    <div class="etapa-desc">O lead está interessado mas ainda tem dúvidas ou pediu condições especiais.</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#e0f2fe;color:#0369a1">Chamar Depois</div>
+    <div class="etapa-desc">O lead pediu para você retornar em outra data. Agende o retorno!</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#dcfce7;color:#166534">Comprou</div>
+    <div class="etapa-desc">🎉 Venda fechada! Registre o valor da venda.</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#fee2e2;color:#991b1b">Desqualificado</div>
+    <div class="etapa-desc">O lead não tem perfil ou não quer comprar. Registre o motivo.</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#f1f5f9;color:#475569">Geladeira</div>
+    <div class="etapa-desc">O lead ficou parado por muito tempo. Vai para reativação futura.</div>
+  </div>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> Arraste o card para a próxima coluna assim que o lead avançar. Manter o Kanban atualizado é o hábito mais importante de uma boa vendedora.
+  </div>
+</div>
+
+<!-- CAPÍTULO 6 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">6</div>
+    <h2>Leads — lista completa</h2>
+  </div>
+
+  <p>A página de Leads mostra todos os seus contatos em formato de lista, com filtros para encontrar rapidamente o que precisa.</p>
+
+  <h3>Como filtrar seus leads</h3>
+  <ul>
+    <li><strong>Busca por nome ou WhatsApp:</strong> Digite o nome do cliente ou o número para encontrá-lo</li>
+    <li><strong>Filtro por etapa:</strong> Veja só os leads em Proposta Enviada, por exemplo</li>
+    <li><strong>Filtro por status:</strong> Ativos, Convertidos, Desqualificados, Geladeira</li>
+  </ul>
+
+  <h3>Exportar seus leads</h3>
+  <p>Na página de Leads tem um botão <strong>"Exportar CSV"</strong>. Clicando nele, você baixa uma planilha com todos os seus leads — útil para análise pessoal ou enviar para a supervisora.</p>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> Use o filtro de etapa para focar no que importa. Comece o dia vendo todos os leads em "Chamar Depois" — são os que você agendou e precisam de atenção hoje.
+  </div>
+</div>
+
+<!-- CAPÍTULO 7 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">7</div>
+    <h2>Como registrar um novo lead</h2>
+  </div>
+
+  <p>Leads que chegam pelo anúncio do WhatsApp entram <strong>automaticamente</strong>. Mas se alguém te chamar por fora (indicação, contato direto, etc.), você pode cadastrar manualmente.</p>
+
+  <div class="passo">
+    <div class="passo-num">1</div>
+    <div class="passo-texto">
+      <strong>Acesse a página de Leads</strong>
+      <p>Clique em "Leads" no menu lateral.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">2</div>
+    <div class="passo-texto">
+      <strong>Clique em "+ Novo Lead"</strong>
+      <p>Um formulário vai abrir.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">3</div>
+    <div class="passo-texto">
+      <strong>Preencha os dados</strong>
+      <p><strong>Nome do cliente</strong> (ou nome da fazenda), <strong>WhatsApp</strong> com DDD e o <strong>produto</strong> que ele tem interesse.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">4</div>
+    <div class="passo-texto">
+      <strong>Salve</strong>
+      <p>O lead aparece no seu Kanban na coluna "Fez Contato".</p>
+    </div>
+  </div>
+
+  <div class="atencao">
+    <strong>⚠️ Atenção:</strong> Não cadastre o mesmo lead duas vezes. Se o contato já aparece no sistema, ele já está lá — só abra e atualize.
+  </div>
+</div>
+
+<!-- CAPÍTULO 8 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">8</div>
+    <h2>Como avançar um lead de etapa</h2>
+  </div>
+
+  <p>Conforme você conversa com o lead, você vai atualizando a etapa dele no sistema. Isso pode ser feito pelo Kanban (arrastando) ou dentro da página do lead.</p>
+
+  <h3>Pelo Kanban</h3>
+  <p>Arraste o card do lead para a coluna da nova etapa. Simples assim.</p>
+
+  <h3>Dentro do lead</h3>
+  <div class="passo">
+    <div class="passo-num">1</div>
+    <div class="passo-texto">
+      <strong>Clique no nome do lead</strong>
+      <p>Na lista de Leads ou no Kanban, clique no card para abrir a ficha completa.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">2</div>
+    <div class="passo-texto">
+      <strong>Clique em "Mudar Etapa"</strong>
+      <p>Selecione a nova etapa e confirme.</p>
+    </div>
+  </div>
+
+  <h3>Quando o lead comprou</h3>
+  <p>Ao mover para <strong>"Comprou"</strong>, o sistema vai pedir:</p>
+  <ul>
+    <li><strong>Valor bruto:</strong> valor total da venda</li>
+    <li><strong>Valor líquido:</strong> valor depois de descontos (se houver)</li>
+    <li><strong>Forma de pagamento:</strong> Pix, Cartão ou Retirada</li>
+  </ul>
+
+  <div class="dica">
+    <strong>💡 Importante:</strong> Registre o valor SEMPRE que fechar uma venda. É a partir desse valor que sua comissão é calculada.
+  </div>
+</div>
+
+<!-- CAPÍTULO 9 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">9</div>
+    <h2>Followups — registrando tentativas de contato</h2>
+  </div>
+
+  <p>Followup é o registro de cada vez que você tentou ou conseguiu falar com o lead. É muito importante registrar cada tentativa, mesmo quando a pessoa não responde.</p>
+
+  <h3>Por que registrar?</h3>
+  <ul>
+    <li>Mostra que você está trabalhando o lead</li>
+    <li>Permite que sua supervisora saiba em que ponto está a negociação</li>
+    <li>Você não fica em dúvida de quantas vezes já tentou</li>
+    <li>Protege você — se o lead não responde após 8 tentativas, ele vai para desqualificado com justificativa</li>
+  </ul>
+
+  <h3>Como registrar um followup</h3>
+  <div class="passo">
+    <div class="passo-num">1</div>
+    <div class="passo-texto">
+      <strong>Abra a ficha do lead</strong>
+      <p>Clique no nome do lead na lista ou no Kanban.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">2</div>
+    <div class="passo-texto">
+      <strong>Vá até "Followups"</strong>
+      <p>Role a tela para baixo e encontre a seção de followups.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">3</div>
+    <div class="passo-texto">
+      <strong>Clique em "+ Registrar Followup"</strong>
+      <p>Escreva uma observação rápida: "Não atendeu", "Disse que vai pensar", "Pediu proposta por e-mail", etc.</p>
+    </div>
+  </div>
+
+  <div class="atencao">
+    <strong>⚠️ Regra da equipe:</strong> Após 8 tentativas sem resposta, mova o lead para <strong>Desqualificado</strong> com o motivo "Nunca respondeu — 8 tentativas". Não fique insistindo além disso.
+  </div>
+</div>
+
+<!-- CAPÍTULO 10 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">10</div>
+    <h2>Script de vendas — checklist</h2>
+  </div>
+
+  <p>Dentro de cada lead existe um <strong>checklist do script de vendas</strong>. Ele serve para garantir que você seguiu os passos corretos da abordagem com aquele cliente.</p>
+
+  <h3>Como usar</h3>
+  <p>Conforme você vai conversando com o lead e cumprindo cada etapa do script, marque como concluído. Se o lead apresentar uma objeção, registre qual foi e como você tratou.</p>
+
+  <h3>Objeções comuns e como tratar</h3>
+  <table class="tabela">
+    <tr>
+      <th>Objeção</th>
+      <th>Como registrar</th>
+    </tr>
+    <tr>
+      <td>Achou caro</td>
+      <td>Selecione "Achou caro" e registre o que você disse</td>
+    </tr>
+    <tr>
+      <td>Gado pouco</td>
+      <td>Selecione "Gado pouco"</td>
+    </tr>
+    <tr>
+      <td>Não conhece o produto</td>
+      <td>Selecione "Não conhece o produto"</td>
+    </tr>
+    <tr>
+      <td>Sem interesse</td>
+      <td>Selecione "Sem interesse" — considere desqualificar</td>
+    </tr>
+    <tr>
+      <td>Sem registro MAPA</td>
+      <td>Selecione "Sem registro MAPA"</td>
+    </tr>
+  </table>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> O checklist ajuda sua supervisora a identificar onde a equipe está tendo mais dificuldade e preparar treinamentos específicos. Use sempre!
+  </div>
+</div>
+
+<!-- CAPÍTULO 11 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">11</div>
+    <h2>Geladeira — leads em pausa</h2>
+  </div>
+
+  <p>A Geladeira é onde ficam os leads que estão "dormindo" — pessoas que pediram para entrar em contato só daqui a um mês, ou que ficaram muito tempo sem responder.</p>
+
+  <h3>Quando colocar na Geladeira?</h3>
+  <ul>
+    <li>O lead disse "me chama de novo em 2 meses"</li>
+    <li>O lead foi agendado mas está há muito tempo sem movimento</li>
+    <li>Época ruim para compra (seca, fim de ano, etc.)</li>
+  </ul>
+
+  <h3>Como reativar um lead da Geladeira</h3>
+  <div class="passo">
+    <div class="passo-num">1</div>
+    <div class="passo-texto">
+      <strong>Acesse o menu "Geladeira"</strong>
+      <p>Veja todos os leads que estão em pausa e quando cada um deve ser reativado.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">2</div>
+    <div class="passo-texto">
+      <strong>Clique em "Reativar"</strong>
+      <p>O lead volta para o funil na etapa "Fez Contato" e você pode trabalhar ele novamente.</p>
+    </div>
+  </div>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> A Geladeira não é lixo! Muitos clientes que disseram não hoje vão comprar daqui a 30 ou 60 dias. Confira sua geladeira toda semana.
+  </div>
+</div>
+
+<!-- CAPÍTULO 12 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">12</div>
+    <h2>Carteira de Clientes</h2>
+  </div>
+
+  <p>A Carteira mostra todos os seus clientes que já compraram. O objetivo é manter o relacionamento e garantir a recompra quando chegar na hora certa.</p>
+
+  <h3>O que cada cor significa</h3>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#dcfce7;color:#166534">🟢 Verde</div>
+    <div class="etapa-desc">Você já fez 2 ou mais contatos com esse cliente no mês. Ótimo!</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#fef3c7;color:#92400e">🟡 Amarelo</div>
+    <div class="etapa-desc">Você fez apenas 1 contato no mês. Tente mais uma vez.</div>
+  </div>
+  <div class="etapa-card">
+    <div class="etapa-badge" style="background:#fee2e2;color:#991b1b">🔴 Vermelho</div>
+    <div class="etapa-desc">Nenhum contato no mês! Esse cliente precisa de atenção urgente.</div>
+  </div>
+
+  <h3>Como registrar um contato com cliente</h3>
+  <div class="passo">
+    <div class="passo-num">1</div>
+    <div class="passo-texto">
+      <strong>Abra o cliente na Carteira</strong>
+      <p>Clique no nome do cliente.</p>
+    </div>
+  </div>
+  <div class="passo">
+    <div class="passo-num">2</div>
+    <div class="passo-texto">
+      <strong>Clique em "+ Registrar Contato"</strong>
+      <p>Escolha o tipo (WhatsApp, ligação, pós-venda) e o resultado (respondeu, demonstrou interesse, comprou, etc.).</p>
+    </div>
+  </div>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> Clientes que vão comprar de novo geralmente sinalizam quando o produto está acabando. Fique de olho no ciclo de recompra de cada produto e entre em contato antes do cliente precisar.
+  </div>
+</div>
+
+<!-- CAPÍTULO 13 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">13</div>
+    <h2>Metas e Comissões</h2>
+  </div>
+
+  <p>Na página de <strong>Metas</strong> você acompanha seu faturamento do mês e quanto de comissão vai receber com base nas vendas registradas.</p>
+
+  <h3>Como funciona a comissão</h3>
+  <p>A comissão é calculada em faixas — quanto mais você vende, maior o percentual que você ganha sobre o total. As faixas são definidas pela empresa e aparecem na página de Metas.</p>
+
+  <table class="tabela">
+    <tr>
+      <th>Faixa de faturamento</th>
+      <th>Comissão</th>
+    </tr>
+    <tr>
+      <td>Faixa inicial</td>
+      <td>Percentual base</td>
+    </tr>
+    <tr>
+      <td>Faixa intermediária</td>
+      <td>Percentual maior</td>
+    </tr>
+    <tr>
+      <td>Faixa topo</td>
+      <td>Percentual mais alto</td>
+    </tr>
+  </table>
+
+  <p><em>Os valores exatos das faixas são configurados pela sua supervisora.</em></p>
+
+  <h3>O que aparece na página de Metas</h3>
+  <ul>
+    <li>Faturamento total do mês até agora</li>
+    <li>Em qual faixa de comissão você está</li>
+    <li>Quanto falta para chegar na próxima faixa</li>
+    <li>Estimativa de comissão com base nas vendas atuais</li>
+  </ul>
+
+  <div class="dica">
+    <strong>💡 Lembre-se:</strong> A comissão só conta se o valor da venda estiver registrado no sistema. Sempre registre o valor quando fechar uma venda!
+  </div>
+</div>
+
+<!-- CAPÍTULO 14 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">14</div>
+    <h2>Importando Leads e Clientes em Massa</h2>
+  </div>
+
+  <p>Se você tem leads em outro sistema (como o Tintim) ou clientes numa planilha, pode importar tudo de uma vez para o CRM — sem precisar cadastrar um por um.</p>
+
+  <h3>Onde fica a importação?</h3>
+  <p>No menu lateral, clique em <strong>Importar Dados</strong>. Você vai encontrar duas abas:</p>
+  <ul>
+    <li><strong>Clientes (Carteira)</strong> — para importar clientes que já compraram antes</li>
+    <li><strong>Leads (Tintim)</strong> — para importar leads que estão no Tintim</li>
+  </ul>
+
+  <h3>Como importar leads do Tintim</h3>
+  <ol>
+    <li>Acesse o Tintim na sua conta</li>
+    <li>Vá em <strong>Relatórios</strong> ou <strong>Contatos → Exportar</strong></li>
+    <li>Exporte como <strong>.csv</strong></li>
+    <li>No CRM, clique em <strong>Importar Dados → aba Leads (Tintim)</strong></li>
+    <li>Arraste o arquivo ou clique para selecionar</li>
+    <li>Clique em <strong>Importar Leads</strong></li>
+  </ol>
+  <p>O sistema vai reconhecer automaticamente os campos do Tintim e criar os leads no seu nome.</p>
+
+  <h3>Como importar clientes da carteira</h3>
+  <p>Se você tem clientes numa planilha Excel ou Google Sheets:</p>
+  <ol>
+    <li>Organize as colunas na ordem: <strong>nome, whatsapp, produto, valor_ultima_compra, data_ultima_compra</strong></li>
+    <li>Salve como <strong>.xlsx</strong> (Excel)</li>
+    <li>No CRM, clique em <strong>Importar Dados → aba Clientes (Carteira)</strong></li>
+    <li>Selecione o arquivo e clique em <strong>Importar Clientes</strong></li>
+  </ol>
+
+  <div class="dica">
+    <strong>💡 Dica:</strong> Se tiver dúvida sobre o formato da planilha, fale com sua supervisora. Ela pode ajudar a formatar corretamente antes de importar.
+  </div>
+
+  <h3>Exportar meus leads</h3>
+  <p>Na página de <strong>Leads</strong> tem um botão <strong>Exportar CSV</strong> no canto superior direito. Clique nele para baixar todos os seus leads em planilha — útil para fazer backup ou analisar fora do sistema.</p>
+</div>
+
+<!-- CAPÍTULO 15 -->
+<div class="capitulo">
+  <div class="cap-header">
+    <div class="cap-num">15</div>
+    <h2>Dúvidas frequentes</h2>
+  </div>
+
+  <h3>O lead não apareceu no sistema, o que faço?</h3>
+  <p>Verifique se o lead veio pelo anúncio do WhatsApp. Se sim, aguarde alguns minutos — pode haver um pequeno delay. Se depois de 10 minutos ainda não aparecer, cadastre manualmente clicando em "+ Novo Lead".</p>
+
+  <h3>Posso ver os leads das minhas colegas?</h3>
+  <p>Não. Cada vendedora vê somente os próprios leads e clientes. Sua supervisora consegue ver todos.</p>
+
+  <h3>Cadastrei o lead errado, como corrijo?</h3>
+  <p>Abra a ficha do lead e edite as informações. Se precisar excluir, fale com sua supervisora.</p>
+
+  <h3>Como agendar um retorno?</h3>
+  <p>Ao mover o lead para "Chamar Depois", o sistema vai pedir a data de retorno. Ele vai aparecer no seu Dashboard na data agendada.</p>
+
+  <h3>A venda foi cancelada, o que faço?</h3>
+  <p>Fale com sua supervisora para reverter o status. Não tente fazer isso sozinha para não bagunçar o relatório.</p>
+
+  <h3>Posso acessar pelo celular?</h3>
+  <p>Sim! O sistema funciona em qualquer celular com navegador. Não precisa instalar nada.</p>
+
+  <h3>Preciso ficar online o tempo todo?</h3>
+  <p>Não. Acesse quando quiser atualizar seus leads. Mas tente registrar as informações no mesmo dia em que aconteceram, enquanto está fresco na memória.</p>
+
+  <div class="dica">
+    <strong>💡 Dica de ouro:</strong> Reserve 10 minutos no começo do dia para verificar o Dashboard e ver os alertas. E mais 10 minutos no fim do dia para atualizar os leads que você trabalhou. Esse hábito faz toda a diferença nos seus resultados.
+  </div>
+</div>
+
+<!-- RODAPÉ -->
+<div class="rodape">
+  <p><strong>Agropec Brasil CRM</strong></p>
+  <p style="margin-top:8px">Guia do Vendedor · Versão 2026</p>
+  <p style="margin-top:16px">Dúvidas? Fale com sua supervisora.</p>
+</div>
+
+</body>
+</html>
