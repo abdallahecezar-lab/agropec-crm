@@ -29,6 +29,8 @@ interface ResultadoLeads {
 
 type Aba = 'tintim' | 'clientes'
 
+
+
 function UploadBox({
   arquivo,
   onChange,
@@ -80,9 +82,11 @@ export default function ImportarPage() {
   const [clientesResultado, setClientesResultado] = useState<ResultadoClientes | null>(null)
   const [clientesErro, setClientesErro] = useState('')
 
-  if (!user || user.role === 'vendedor') {
+  if (!user) {
     return <div className="p-8 text-center text-gray-500">Acesso negado</div>
   }
+
+  const isVendedor = user.role === 'vendedor'
 
   function handleTintimFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
@@ -165,16 +169,18 @@ export default function ImportarPage() {
         >
           📥 Leads do Tintim
         </button>
-        <button
-          onClick={() => setAba('clientes')}
-          className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-            aba === 'clientes'
-              ? 'border-green-600 text-green-700'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          👥 Carteira de Clientes (Excel)
-        </button>
+        {!isVendedor && (
+          <button
+            onClick={() => setAba('clientes')}
+            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+              aba === 'clientes'
+                ? 'border-green-600 text-green-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            👥 Carteira de Clientes (Excel)
+          </button>
+        )}
       </div>
 
       {/* ABA: TINTIM */}
@@ -182,16 +188,33 @@ export default function ImportarPage() {
         <div className="space-y-4">
           <Card padding="md">
             <h2 className="text-sm font-semibold text-gray-700 mb-2">Como exportar do Tintim</h2>
-            <ol className="text-sm text-gray-500 space-y-1 list-decimal list-inside">
-              <li>Acesse a conta da vendedora no Tintim</li>
-              <li>Vá em <strong>Relatórios</strong> ou <strong>Exportar contatos</strong></li>
-              <li>Exporte no formato <strong>.csv</strong></li>
-              <li>Faça isso para cada vendedora e importe um arquivo por vez aqui</li>
-            </ol>
-            <p className="text-xs text-gray-400 mt-3">
-              O sistema identifica automaticamente a qual vendedora os leads pertencem pelo nome da conta no arquivo.
-              Leads já existentes são ignorados (sem duplicatas).
-            </p>
+            {isVendedor ? (
+              <>
+                <ol className="text-sm text-gray-500 space-y-1 list-decimal list-inside">
+                  <li>Acesse <strong>sua conta</strong> no Tintim</li>
+                  <li>Vá em <strong>Relatórios</strong> ou <strong>Exportar contatos</strong></li>
+                  <li>Exporte no formato <strong>.csv</strong></li>
+                  <li>Faça o upload do arquivo aqui</li>
+                </ol>
+                <p className="text-xs text-gray-400 mt-3">
+                  Todos os leads do arquivo serão importados para a sua conta no CRM.
+                  Leads já existentes são ignorados (sem duplicatas).
+                </p>
+              </>
+            ) : (
+              <>
+                <ol className="text-sm text-gray-500 space-y-1 list-decimal list-inside">
+                  <li>Acesse a conta da vendedora no Tintim</li>
+                  <li>Vá em <strong>Relatórios</strong> ou <strong>Exportar contatos</strong></li>
+                  <li>Exporte no formato <strong>.csv</strong></li>
+                  <li>Faça isso para cada vendedora e importe um arquivo por vez aqui</li>
+                </ol>
+                <p className="text-xs text-gray-400 mt-3">
+                  O sistema identifica automaticamente a qual vendedora os leads pertencem pelo nome da conta no arquivo.
+                  Leads já existentes são ignorados (sem duplicatas).
+                </p>
+              </>
+            )}
           </Card>
 
           <Card padding="md">

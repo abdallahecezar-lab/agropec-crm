@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getUserFromRequest(request)
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    if (user.role === 'vendedor') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
     const formData = await request.formData()
     const file = formData.get('arquivo') as File | null
@@ -57,11 +56,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Arquivo vazio ou sem dados' }, { status: 400 })
     }
 
-    // Busca todos os vendedores para lookup
-    const vendedores = await prisma.user.findMany({
-      where: { role: 'vendedor', ativo: true },
-      select: { id: true, nome: true },
-    })
+    // Busca vendedores para lookup (gestor/diretor podem importar para qualquer vendedor)
+    // Vendedor: importa sempre para si mesmo
+    const vendedores = user.role === 'vendedor'
+      ? [{ id: user.id, nome: user.nome }]
+      : await prisma.user.findMany({
+          where: { role: 'vendedor', ativo: true },
+          select: { id: true, nome: true },
+        })
 
     const resultados = {
       importados: 0,
@@ -98,12 +100,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Match vendedor pelo nome da conta
-      const vendedor = vendedores.find(
-        (v) =>
-          v.nome.toLowerCase() === nomeConta.toLowerCase() ||
-          v.nome.toLowerCase().includes(nomeConta.toLowerCase()) ||
-          nomeConta.toLowerCase().includes(v.nome.toLowerCase())
-      )
+      // Para vendedores, todos os leads vão para si mesmo (ignora nomeConta)
+      const vendedor = user.role === 'vendedor'
+        ? vendedores[0]
+        : vendedores.find(
+            (v) =>
+              v.nome.toLowerCase() === nomeConta.toLowerCase() ||
+              v.nome.toLowerCase().includes(nomeConta.toLowerCase()) ||
+              nomeConta.toLowerCase().includes(v.nome.toLowerCase())
+          )
 
       if (!vendedor) {
         resultados.ignorados.push({ linha, motivo: `Vendedor não encontrado: "${nomeConta}"` })

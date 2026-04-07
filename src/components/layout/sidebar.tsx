@@ -73,14 +73,14 @@ const UploadIcon = () => (
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: <ChartBarIcon /> },
   { href: '/kanban', label: 'Kanban', icon: <ViewColumnsIcon /> },
-  { href: '/leads', label: 'Leads', icon: <ListBulletIcon />, roles: ['gestor', 'diretor'] },
+  { href: '/leads', label: 'Leads', icon: <ListBulletIcon /> },
   { href: '/clientes', label: 'Carteira', icon: <UsersIcon /> },
   { href: '/geladeira', label: 'Geladeira', icon: <SnowflakeIcon /> },
   { href: '/metas', label: 'Metas', icon: <TrophyIcon /> },
   { href: '/templates', label: 'Templates', icon: <ChatIcon /> },
   { href: '/monitor-script', label: 'Monitor Script', icon: <ClipboardIcon />, roles: ['gestor', 'diretor'] },
   { href: '/usuarios', label: 'Equipe', icon: <PeopleIcon />, roles: ['gestor', 'diretor'] },
-  { href: '/importar', label: 'Importar Clientes', icon: <UploadIcon />, roles: ['gestor', 'diretor'] },
+  { href: '/importar', label: 'Importar Leads', icon: <UploadIcon /> },
   { href: '/configuracoes', label: 'Configurações', icon: <CogIcon />, roles: ['gestor', 'diretor'] },
 ]
 

@@ -42,14 +42,11 @@ async function main() {
 
   // Products
   const produtos = await Promise.all([
-    prisma.produto.create({ data: { nome: 'Suplemento Bovino Premium 30kg', cicloRecompraDias: 30 } }),
-    prisma.produto.create({ data: { nome: 'Mineral Completo 25kg', cicloRecompraDias: 45 } }),
-    prisma.produto.create({ data: { nome: 'Sal Proteinado Bovinos 30kg', cicloRecompraDias: 30 } }),
-    prisma.produto.create({ data: { nome: 'Núcleo Mineral Bovino 10kg', cicloRecompraDias: 60 } }),
-    prisma.produto.create({ data: { nome: 'Suplemento Proteico Energético 30kg', cicloRecompraDias: 30 } }),
-    prisma.produto.create({ data: { nome: 'Mineral Bovino Fósforo Alto 25kg', cicloRecompraDias: 45 } }),
-    prisma.produto.create({ data: { nome: 'Kit Combo 3x Suplemento Premium', cicloRecompraDias: 90 } }),
-    prisma.produto.create({ data: { nome: 'Suplemento para Vacas em Lactação 25kg', cicloRecompraDias: 30 } }),
+    prisma.produto.create({ data: { nome: 'Promotor de Engorda', cicloRecompraDias: 30 } }),
+    prisma.produto.create({ data: { nome: 'Vermífugo', cicloRecompraDias: 30 } }),
+    prisma.produto.create({ data: { nome: 'Vitaminas', cicloRecompraDias: 30 } }),
+    prisma.produto.create({ data: { nome: 'Cavalo', cicloRecompraDias: 30 } }),
+    prisma.produto.create({ data: { nome: 'Todos os Produtos', cicloRecompraDias: 30 } }),
   ])
 
   console.log('✅ Produtos criados')

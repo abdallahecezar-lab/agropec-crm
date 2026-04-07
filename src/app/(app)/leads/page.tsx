@@ -13,6 +13,11 @@ import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 import type { Lead } from '@/types'
 
+interface MembroEquipe {
+  id: string
+  nome: string
+}
+
 export default function LeadsPage() {
   const { user } = useAuth()
   const [leads, setLeads] = useState<Lead[]>([])
@@ -21,13 +26,27 @@ export default function LeadsPage() {
   const [search, setSearch] = useState('')
   const [etapaFilter, setEtapaFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [vendedorFilter, setVendedorFilter] = useState('')
+  const [equipe, setEquipe] = useState<MembroEquipe[]>([])
+
+  const isGestorOuDiretor = user?.role === 'gestor' || user?.role === 'diretor'
+
+  // Busca equipe para popular o filtro (só para gestor/diretor)
+  useEffect(() => {
+    if (!isGestorOuDiretor) return
+    fetch('/api/usuarios')
+      .then((r) => r.json())
+      .then((d) => setEquipe(d.vendedores || []))
+      .catch(() => {})
+  }, [isGestorOuDiretor])
 
   const fetchLeads = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ limit: '200' })
+      const params = new URLSearchParams({ limit: '500' })
       if (etapaFilter) params.set('etapa', etapaFilter)
       if (statusFilter) params.set('statusLead', statusFilter)
+      if (vendedorFilter) params.set('vendedorId', vendedorFilter)
       const res = await fetch(`/api/leads?${params}`)
       if (res.ok) {
         const data = await res.json()
@@ -38,7 +57,7 @@ export default function LeadsPage() {
     }
   }
 
-  useEffect(() => { fetchLeads() }, [etapaFilter, statusFilter])
+  useEffect(() => { fetchLeads() }, [etapaFilter, statusFilter, vendedorFilter])
 
   const filtered = leads.filter((l) =>
     !search ||
@@ -74,7 +93,9 @@ export default function LeadsPage() {
                 { value: 'proposta_enviada', label: 'Proposta Enviada' },
                 { value: 'negociacao', label: 'Negociação' },
                 { value: 'chamar_depois', label: 'Chamar Depois' },
+                { value: 'correios', label: 'Correios' },
                 { value: 'comprou', label: 'Comprou' },
+                { value: 'voltou', label: 'Voltou' },
                 { value: 'desqualificado', label: 'Desqualificado' },
                 { value: 'geladeira', label: 'Geladeira' },
               ]}
@@ -93,6 +114,21 @@ export default function LeadsPage() {
               ]}
             />
           </div>
+          {isGestorOuDiretor && equipe.length > 0 && (
+            <div className="w-44">
+              <Select
+                value={vendedorFilter}
+                onChange={(e) => setVendedorFilter(e.target.value)}
+                options={[
+                  { value: '', label: 'Toda a equipe' },
+                  { value: user!.id, label: 'Meus leads' },
+                  ...equipe
+                    .filter((m) => m.id !== user?.id)
+                    .map((m) => ({ value: m.id, label: m.nome })),
+                ]}
+              />
+            </div>
+          )}
           <Button onClick={() => setShowNew(true)}>+ Novo Lead</Button>
           <button
             onClick={() => window.open('/api/exportar/leads', '_blank')}
@@ -122,7 +158,7 @@ export default function LeadsPage() {
                 <TableTh>Cliente</TableTh>
                 <TableTh>Produto</TableTh>
                 <TableTh>Etapa</TableTh>
-                {user?.role === 'gestor' && <TableTh>Vendedor</TableTh>}
+                {isGestorOuDiretor && <TableTh>Vendedor</TableTh>}
                 <TableTh>Follow-ups</TableTh>
                 <TableTh>Valor</TableTh>
                 <TableTh>Chegou</TableTh>
@@ -146,7 +182,7 @@ export default function LeadsPage() {
                       {getEtapaLabel(lead.etapa)}
                     </Badge>
                   </TableTd>
-                  {user?.role === 'gestor' && (
+                  {isGestorOuDiretor && (
                     <TableTd>{lead.vendedor?.nome || '—'}</TableTd>
                   )}
                   <TableTd>

@@ -1,6 +1,6 @@
 # Agropec Brasil — CRM
 
-Sistema completo de CRM para a empresa Agropec Brasil, especializada em produtos agropecuários.
+Sistema completo de CRM para a Agropec Brasil, especializada em produtos agropecuários.
 
 ---
 
@@ -14,7 +14,7 @@ Sistema completo de CRM para a empresa Agropec Brasil, especializada em produtos
 
 ## Instalação rápida
 
-### 1. Clone ou extraia o projeto
+### 1. Entre na pasta do projeto
 
 ```bash
 cd Documents/agropec-crm
@@ -34,27 +34,17 @@ Crie um banco PostgreSQL chamado `agropec_crm`:
 CREATE DATABASE agropec_crm;
 ```
 
-Ou via pgAdmin: clique com botão direito em "Databases" → "Create" → "Database..."
+Ou via pgAdmin: botão direito em "Databases" → "Create" → "Database..."
 
 ### 4. Configure o arquivo `.env`
 
-O arquivo `.env` já existe na raiz. Verifique se a URL está correta:
-
 ```env
-DATABASE_URL="postgresql://SEU_USUARIO:SUA_SENHA@localhost:5432/agropec_crm"
+DATABASE_URL="postgresql://postgres:SUASENHA@localhost:5432/agropec_crm"
 JWT_SECRET="agropec-crm-super-secret-jwt-key-2024"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Troque `SEU_USUARIO` e `SUA_SENHA` pelas credenciais do seu PostgreSQL.
-Por padrão o PostgreSQL usa: usuário `postgres`, senha definida na instalação.
-
-Exemplo:
-```env
-DATABASE_URL="postgresql://postgres:minhasenha@localhost:5432/agropec_crm"
-```
-
-### 5. Crie as tabelas do banco
+### 5. Crie as tabelas
 
 ```bash
 npm run db:push
@@ -66,15 +56,6 @@ npm run db:push
 npm run db:seed
 ```
 
-Este comando cria:
-- 4 usuários (gestor + 3 vendedores)
-- 8 produtos com ciclos de recompra
-- 50+ leads em diversas etapas
-- Follow-ups e histórico
-- 20+ clientes na carteira
-- Templates de mensagem
-- Configurações padrão
-
 ### 7. Inicie o servidor
 
 ```bash
@@ -85,27 +66,70 @@ Acesse: **http://localhost:3000**
 
 ---
 
-## Usuários de teste
+## Perfis de acesso
 
-| E-mail | Senha | Perfil |
-|--------|-------|--------|
-| gestor@agropec.com | senha123 | Gestor (acesso total) |
-| vendedor1@agropec.com | senha123 | Vendedor |
-| vendedor2@agropec.com | senha123 | Vendedor |
-| vendedor3@agropec.com | senha123 | Vendedor |
+| Perfil    | Acesso |
+|-----------|--------|
+| `diretor` | Acesso total — visão de toda a empresa |
+| `gestor`  | Gerencia a própria equipe de vendedores |
+| `vendedor`| Vê apenas seus próprios leads e clientes |
+
+---
+
+## Produtos cadastrados
+
+1. Promotor de Engorda
+2. Vermífugo
+3. Vitaminas
+4. Cavalo
+5. Todos os Produtos
+
+Para redefinir os produtos no banco em produção, chame (logado como gestor/diretor):
+```
+POST /api/setup/seed-produtos
+```
+
+---
+
+## Funil Kanban — 9 etapas
+
+| Etapa | Descrição |
+|-------|-----------|
+| Fez Contato | Lead chegou, primeiro contato realizado |
+| Proposta Enviada | Proposta comercial enviada |
+| Negociação | Em negociação ativa |
+| Chamar Depois | Agendado para contato futuro (data obrigatória) |
+| Correios | Aguardando envio / entrega |
+| Comprou | Venda realizada — gera cliente na carteira |
+| Voltou | Cliente que retornou ao funil |
+| Desqualificado | Lead sem perfil ou interesse |
+| Geladeira | Lead frio — cadência de reativação automática |
 
 ---
 
 ## Funcionalidades
 
 ### Funil de Vendas (Kanban)
-- 7 colunas: Fez Contato, Proposta Enviada, Negociação, Chamar Depois, Comprou, Desqualificado, Geladeira
-- Drag and drop entre etapas
+- 9 colunas com drag and drop
+- Texto legível (preto) em todos os cabeçalhos de coluna
 - Modais obrigatórios ao mover para Chamar Depois, Desqualificado e Comprou
 - Badges visuais de alertas nos cards
+- Botão "Importar Lista" disponível para todos os perfis
+
+### Lista de Leads (`/leads`)
+- Visualização em tabela disponível para todos os perfis
+- Filtros por etapa, status e busca por nome/WhatsApp
+- Exportação CSV
+- Botão "Novo Lead"
+
+### Importação de Leads
+- **Todos os perfis**: importação de leads via CSV do Tintim
+  - Vendedor: todos os leads do arquivo vão para sua própria conta
+  - Gestor/Diretor: leads são distribuídos pela conta identificada no arquivo
+- **Gestor/Diretor**: importação de carteira de clientes via Excel (.xlsx)
 
 ### Leads
-- Cadastro com origem (rastreado / não rastreado)
+- Cadastro com produto e origem (rastreado / não rastreado)
 - Registro de primeira resposta (NÃO é follow-up)
 - Follow-ups controlados: máximo 1 por dia por lead
 - Checklist do script de vendas (8 itens)
@@ -119,31 +143,28 @@ Acesse: **http://localhost:3000**
 
 ### Carteira de Clientes
 - Criada automaticamente ao mover lead para "Comprou"
-- Semáforo de contato mensal (🔴 0 contatos / 🟡 1 contato / 🟢 2+ contatos)
-- Histórico completo de contatos
+- Semáforo de contato mensal (🔴 0 / 🟡 1 / 🟢 2+ contatos)
+- Histórico de contatos
 - Detecção de janela de recompra por produto
 
 ### Metas e Comissões
-- Cálculo automático baseado no faturamento líquido
+- Cálculo automático sobre faturamento líquido
 - Tabela de comissões por faixa (não progressiva)
-- Projeção do mês
-- Salário fixo em 2 parcelas
-- Ranking do time (visão gestor)
+- Projeção do mês e ranking do time
 
 ### Dashboards
-- Vendedor: métricas individuais, comissão, carteira
-- Gestor: visão geral, rankings, funil, financeiro
+- **Vendedor**: métricas individuais, comissão, carteira
+- **Gestor/Diretor**: visão geral, rankings, funil, financeiro
 
 ### Monitor de Script
-- Conformidade por vendedor
+- Conformidade por vendedor (gestor/diretor)
 - Leads com checklist incompleto
-- Distribuição por passo do script
 
 ### Templates de Mensagem
 - 6 categorias: follow-up, geladeira, promoção, pós-venda, carteira, reativação
 - Cópia rápida para WhatsApp
 
-### Configurações (gestor)
+### Configurações (gestor/diretor)
 - Janela de trabalho configurável
 - Cadência da geladeira configurável
 - Cadastro de produtos com ciclo de recompra
@@ -155,38 +176,36 @@ Acesse: **http://localhost:3000**
 ```
 agropec-crm/
 ├── prisma/
-│   ├── schema.prisma       # Modelagem do banco
-│   └── seed.ts             # Dados de exemplo
+│   ├── schema.prisma         # Modelagem do banco
+│   └── seed.ts               # Dados de exemplo
 ├── src/
 │   ├── app/
-│   │   ├── (auth)/login/   # Tela de login
-│   │   ├── (app)/          # Área autenticada
-│   │   │   ├── dashboard/  # Dashboard (vendedor ou gestor)
-│   │   │   ├── kanban/     # Funil kanban
-│   │   │   ├── leads/      # Lista e detalhe de leads
-│   │   │   ├── clientes/   # Carteira de clientes
-│   │   │   ├── geladeira/  # Leads frios
-│   │   │   ├── metas/      # Metas e comissões
-│   │   │   ├── templates/  # Templates de mensagem
-│   │   │   ├── monitor-script/ # Monitor do script
-│   │   │   └── configuracoes/  # Configurações
-│   │   └── api/            # API Routes (Next.js)
+│   │   ├── (auth)/login/     # Tela de login
+│   │   └── (app)/
+│   │       ├── dashboard/    # Dashboard
+│   │       ├── kanban/       # Funil kanban
+│   │       ├── leads/        # Lista de leads
+│   │       ├── clientes/     # Carteira de clientes
+│   │       ├── geladeira/    # Leads frios
+│   │       ├── importar/     # Importação de dados
+│   │       ├── metas/        # Metas e comissões
+│   │       ├── templates/    # Templates de mensagem
+│   │       ├── monitor-script/  # Monitor do script
+│   │       └── configuracoes/   # Configurações
+│   │   └── api/              # API Routes (Next.js)
 │   ├── components/
-│   │   ├── ui/             # Componentes base
-│   │   ├── layout/         # Sidebar, Header
-│   │   ├── kanban/         # Kanban e cards
-│   │   ├── leads/          # Seções do lead
-│   │   └── dashboard/      # Componentes do dashboard
-│   ├── hooks/
-│   │   └── use-auth.tsx    # Hook de autenticação
+│   │   ├── ui/               # Componentes base
+│   │   ├── layout/           # Sidebar, Header
+│   │   ├── kanban/           # Kanban e cards
+│   │   ├── leads/            # Seções do lead
+│   │   └── dashboard/        # Componentes do dashboard
 │   ├── lib/
-│   │   ├── auth.ts         # JWT utilities
-│   │   ├── prisma.ts       # Prisma client
-│   │   ├── utils.ts        # Funções utilitárias
-│   │   └── constants.ts    # Constantes do sistema
-│   ├── middleware.ts        # Proteção de rotas
-│   └── types/index.ts      # Tipos TypeScript
-├── .env                    # Variáveis de ambiente
+│   │   ├── auth.ts           # JWT utilities
+│   │   ├── prisma.ts         # Prisma client
+│   │   ├── utils.ts          # Funções utilitárias
+│   │   └── constants.ts      # Constantes do sistema
+│   └── middleware.ts         # Proteção de rotas
+├── .env                      # Variáveis de ambiente
 └── package.json
 ```
 
@@ -195,36 +214,31 @@ agropec-crm/
 ## Comandos úteis
 
 ```bash
-# Desenvolvimento
-npm run dev
-
-# Build de produção
-npm run build && npm start
-
-# Visualizar banco de dados
-npm run db:studio
-
-# Recriar banco (CUIDADO: apaga todos os dados)
-npm run db:push -- --force-reset
-npm run db:seed
+npm run dev            # Desenvolvimento
+npm run build          # Build de produção
+npm start              # Servidor de produção
+npm run db:studio      # Visualizar banco de dados (Prisma Studio)
+npm run db:push        # Aplicar schema ao banco
+npm run db:seed        # Popular banco com dados de exemplo
 ```
 
 ---
 
-## Regras de negócio implementadas
+## Regras de negócio
 
 - ✅ Primeiro contato NÃO é follow-up
-- ✅ Máximo 1 follow-up por dia por lead (bloqueio no backend)
-- ✅ Motivo "nunca respondeu 8+ tentativas" exige 8+ follow-ups
+- ✅ Máximo 1 follow-up por dia por lead
+- ✅ "Nunca respondeu 8+ tentativas" exige 8+ follow-ups registrados
 - ✅ Geladeira ≠ carteira de clientes
-- ✅ Comissão calculada apenas sobre faturamento **líquido**
+- ✅ Comissão calculada apenas sobre faturamento líquido
 - ✅ Comissão por faixa plana (não progressiva)
-- ✅ Vendedor só vê seus próprios dados
-- ✅ Todas as rotas validadas no backend
+- ✅ Vendedor vê apenas seus próprios dados
 - ✅ Chamar Depois exige data/hora obrigatória
+- ✅ Todas as rotas validadas no backend
 
 ---
 
 ## Suporte
 
 Sistema desenvolvido para uso interno da Agropec Brasil.
+Para o manual de uso da equipe, consulte `MANUAL_USO.md`.
