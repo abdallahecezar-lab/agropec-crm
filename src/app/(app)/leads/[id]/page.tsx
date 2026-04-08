@@ -19,8 +19,126 @@ import {
   formatCurrency,
 } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
-import type { Lead, Followup, ScriptChecklistItem, LeadEtapaHistorico, EtapaLead } from '@/types'
+import type { Lead, Followup, ScriptChecklistItem, LeadEtapaHistorico, EtapaLead, StatusCorreios } from '@/types'
 import Link from 'next/link'
+
+const STATUS_CORREIOS_LABEL: Record<string, string> = {
+  aguardando_rastreio: '⏳ Aguardando rastreio',
+  postado: '📦 Postado',
+  em_transito: '🚚 Em trânsito',
+  disponivel_retirada: '🔔 Disponível para retirada',
+  retirado: '✅ Retirado',
+  devolvido: '↩️ Devolvido',
+}
+
+function CorreiosPanel({ lead, onUpdated }: { lead: Lead; onUpdated: () => void }) {
+  const [codigoRastreio, setCodigoRastreio] = useState(lead.codigoRastreio || '')
+  const [salvando, setSalvando] = useState(false)
+  const [editando, setEditando] = useState(false)
+
+  const salvarRastreio = async () => {
+    setSalvando(true)
+    try {
+      await fetch(`/api/leads/${lead.id}/correios`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigoRastreio }),
+      })
+      setEditando(false)
+      onUpdated()
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  const atualizarStatus = async (status: StatusCorreios) => {
+    setSalvando(true)
+    try {
+      await fetch(`/api/leads/${lead.id}/correios`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statusCorreios: status }),
+      })
+      onUpdated()
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  const statusAtual = lead.statusCorreios || 'aguardando_rastreio'
+  const prazoVencido = lead.prazoRastreioAt && new Date(lead.prazoRastreioAt) < new Date()
+
+  return (
+    <div className="p-4 bg-sky-50 rounded-lg border border-sky-200 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-lg">📦</span>
+        <h4 className="font-semibold text-sky-900">Controle de Correios</h4>
+        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-medium">
+          {STATUS_CORREIOS_LABEL[statusAtual] || statusAtual}
+        </span>
+      </div>
+
+      {/* Código de rastreio */}
+      <div>
+        <label className="text-xs text-sky-700 font-medium block mb-1">Código de Rastreio</label>
+        {editando ? (
+          <div className="flex gap-2">
+            <input
+              value={codigoRastreio}
+              onChange={(e) => setCodigoRastreio(e.target.value.toUpperCase())}
+              placeholder="Ex: AA123456789BR"
+              className="flex-1 text-sm border border-sky-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-400 uppercase"
+            />
+            <button onClick={salvarRastreio} disabled={salvando || !codigoRastreio} className="text-sm px-3 py-1.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 disabled:opacity-50">
+              {salvando ? '...' : 'Salvar'}
+            </button>
+            <button onClick={() => setEditando(false)} className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-800">Cancelar</button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-mono font-medium text-sky-900">
+              {lead.codigoRastreio || <span className="text-sky-500 italic">Não inserido ainda</span>}
+            </span>
+            {lead.codigoRastreio && (
+              <a href={`https://rastreamento.correios.com.br/app/index.php?objetos=${lead.codigoRastreio}`} target="_blank" rel="noopener noreferrer" className="text-xs text-sky-600 underline">
+                Rastrear ↗
+              </a>
+            )}
+            <button onClick={() => setEditando(true)} className="text-xs text-sky-600 hover:text-sky-800 underline ml-auto">
+              {lead.codigoRastreio ? 'Alterar' : 'Inserir código'}
+            </button>
+          </div>
+        )}
+        {!lead.codigoRastreio && (
+          <p className="text-xs text-orange-600 mt-1">⚠️ Insira o código de rastreio em até 3 dias úteis após a postagem.</p>
+        )}
+        {prazoVencido && !lead.codigoRastreio && (
+          <p className="text-xs text-red-600 mt-1 font-medium">🔴 Prazo vencido! Insira o código imediatamente.</p>
+        )}
+      </div>
+
+      {/* Atualizar status */}
+      {lead.codigoRastreio && statusAtual !== 'retirado' && statusAtual !== 'devolvido' && (
+        <div>
+          <label className="text-xs text-sky-700 font-medium block mb-1">Atualizar status</label>
+          <div className="flex flex-wrap gap-2">
+            {statusAtual !== 'disponivel_retirada' && (
+              <button onClick={() => atualizarStatus('disponivel_retirada')} disabled={salvando} className="text-xs px-3 py-1.5 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 disabled:opacity-50">
+                🔔 Disponível p/ retirada
+              </button>
+            )}
+            <button onClick={() => atualizarStatus('retirado')} disabled={salvando} className="text-xs px-3 py-1.5 bg-green-100 text-green-800 border border-green-300 rounded-lg hover:bg-green-200 disabled:opacity-50">
+              ✅ Retirado → Comprou
+            </button>
+            <button onClick={() => atualizarStatus('devolvido')} disabled={salvando} className="text-xs px-3 py-1.5 bg-red-100 text-red-800 border border-red-300 rounded-lg hover:bg-red-200 disabled:opacity-50">
+              ↩️ Devolvido → Voltou
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -34,6 +152,9 @@ export default function LeadDetailPage() {
   const [editingInfo, setEditingInfo] = useState(false)
   const [editForm, setEditForm] = useState({ nomeCliente: '', whatsapp: '', observacoes: '' })
   const [editSaving, setEditSaving] = useState(false)
+  const [agendandoData, setAgendandoData] = useState(false)
+  const [novaDataAgendamento, setNovaDataAgendamento] = useState('')
+  const [salvandoAgendamento, setSalvandoAgendamento] = useState(false)
 
   const fetchLead = async () => {
     try {
@@ -108,6 +229,25 @@ export default function LeadDetailPage() {
     }
   }
 
+  const handleSalvarAgendamento = async () => {
+    if (!lead || !novaDataAgendamento) return
+    setSalvandoAgendamento(true)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agendadoPara: new Date(novaDataAgendamento).toISOString() }),
+      })
+      if (res.ok) {
+        await fetchLead()
+        setAgendandoData(false)
+        setNovaDataAgendamento('')
+      }
+    } finally {
+      setSalvandoAgendamento(false)
+    }
+  }
+
   const handleStageMoved = async (data: any) => {
     if (!lead) return
     await fetch(`/api/leads/${lead.id}/etapa`, {
@@ -173,6 +313,15 @@ export default function LeadDetailPage() {
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                   </svg>
                   {formatWhatsApp(lead.whatsapp)}
+                </a>
+                <a
+                  href={`tel:+${lead.whatsapp.replace(/\D/g, '')}`}
+                  className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  Ligar
                 </a>
                 <span className="flex items-center gap-1.5">
                   <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,14 +392,53 @@ export default function LeadDetailPage() {
           </div>
 
           {/* Alerts */}
-          {lead.etapa === 'chamar_depois' && lead.agendadoPara && (
-            <div className={`mt-3 p-3 rounded-lg border ${isAtrasado ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
-              <p className={`text-sm font-medium ${isAtrasado ? 'text-red-800' : 'text-blue-800'}`}>
-                {isAtrasado ? '🔴 Chamada atrasada — ' : '📅 Agendar: '}
-                {formatDateTime(lead.agendadoPara)}
-              </p>
-            </div>
-          )}
+          {/* Agendamento — editável diretamente */}
+          <div className={`mt-3 p-3 rounded-lg border ${isAtrasado ? 'bg-red-50 border-red-200' : lead.agendadoPara ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+            {agendandoData ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-medium text-gray-700">📅 Agendar para:</span>
+                <input
+                  type="datetime-local"
+                  value={novaDataAgendamento}
+                  onChange={(e) => setNovaDataAgendamento(e.target.value)}
+                  className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-400"
+                />
+                <button
+                  onClick={handleSalvarAgendamento}
+                  disabled={salvandoAgendamento || !novaDataAgendamento}
+                  className="text-sm px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  {salvandoAgendamento ? '...' : 'Salvar'}
+                </button>
+                <button
+                  onClick={() => { setAgendandoData(false); setNovaDataAgendamento('') }}
+                  className="text-sm px-3 py-1 text-gray-600 hover:text-gray-800"
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className={`text-sm font-medium ${isAtrasado ? 'text-red-800' : lead.agendadoPara ? 'text-blue-800' : 'text-gray-500'}`}>
+                  {isAtrasado ? '🔴 Chamada atrasada — ' : lead.agendadoPara ? '📅 Agendado: ' : '📅 Sem agendamento'}
+                  {lead.agendadoPara && formatDateTime(lead.agendadoPara)}
+                </p>
+                <button
+                  onClick={() => {
+                    setAgendandoData(true)
+                    if (lead.agendadoPara) {
+                      const d = new Date(lead.agendadoPara)
+                      const pad = (n: number) => String(n).padStart(2, '0')
+                      setNovaDataAgendamento(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`)
+                    }
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium underline"
+                >
+                  {lead.agendadoPara ? 'Alterar' : 'Agendar'}
+                </button>
+              </div>
+            )}
+          </div>
 
           {lead.etapa === 'comprou' && lead.valorBruto && (
             <div className="mt-3 p-3 rounded-lg border bg-green-50 border-green-200">
@@ -407,6 +595,11 @@ export default function LeadDetailPage() {
                   <label className="text-xs text-gray-500 uppercase tracking-wide">Observações</label>
                   <p className="text-sm text-gray-700 mt-1 p-3 bg-gray-50 rounded-lg">{lead.observacoes}</p>
                 </div>
+              )}
+
+              {/* Correios info */}
+              {lead.etapa === 'correios' && (
+                <CorreiosPanel lead={lead} onUpdated={fetchLead} />
               )}
 
               {/* Geladeira info */}

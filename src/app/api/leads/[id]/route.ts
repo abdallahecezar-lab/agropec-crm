@@ -9,6 +9,7 @@ const updateLeadSchema = z.object({
   produtoId: z.string().optional(),
   origem: z.enum(['rastreado', 'nao_rastreado']).optional(),
   observacoes: z.string().optional(),
+  agendadoPara: z.string().optional().nullable(),
 })
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -64,9 +65,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 })
     }
 
+    const { agendadoPara, ...rest } = result.data
+    const updateData: any = { ...rest }
+    if (agendadoPara !== undefined) {
+      updateData.agendadoPara = agendadoPara ? new Date(agendadoPara) : null
+    }
+
     const updated = await prisma.lead.update({
       where: { id: params.id },
-      data: result.data,
+      data: updateData,
       include: {
         produto: true,
         vendedor: { select: { id: true, nome: true } },

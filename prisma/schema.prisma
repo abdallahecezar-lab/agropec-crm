@@ -32,6 +32,20 @@ enum TipoFollowup {
   texto_whatsapp
 }
 
+enum StatusCorreios {
+  aguardando_rastreio
+  postado
+  em_transito
+  disponivel_retirada
+  retirado
+  devolvido
+}
+
+enum TipoTransacao {
+  credito
+  debito
+}
+
 enum FormaPagamento {
   pix
   cartao
@@ -108,6 +122,7 @@ model User {
   reativacoes     ReativacaoLead[]
   notificacoes    Notificacao[]
   clientes        Cliente[]
+  transacoes      SalesTransaction[]
 }
 
 model Produto {
@@ -154,6 +169,12 @@ model Lead {
   proximaReativacao   DateTime?
   tentativasReativacao Int                   @default(0)
 
+  // Correios
+  codigoRastreio      String?
+  statusCorreios      StatusCorreios?
+  postedAt            DateTime?
+  prazoRastreioAt     DateTime?
+
   criadoEm            DateTime               @default(now())
   atualizadoEm        DateTime               @updatedAt
 
@@ -162,6 +183,22 @@ model Lead {
   historicoEtapas     LeadEtapaHistorico[]
   reativacoes         ReativacaoLead[]
   notificacoes        Notificacao[]
+  transacoes          SalesTransaction[]
+}
+
+model SalesTransaction {
+  id          String          @id @default(cuid())
+  leadId      String
+  lead        Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vendedorId  String
+  vendedor    User            @relation(fields: [vendedorId], references: [id])
+  tipo        TipoTransacao
+  valorBruto  Float
+  valorLiquido Float
+  mes         Int
+  ano         Int
+  descricao   String?
+  criadoEm   DateTime        @default(now())
 }
 
 model Followup {

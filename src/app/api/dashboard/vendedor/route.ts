@@ -52,6 +52,20 @@ export async function GET(request: NextRequest) {
     const leadsDesqualificados = allLeads.filter((l) => l.statusLead === 'desqualificado').length
     const leadsGeladeira = allLeads.filter((l) => l.statusLead === 'geladeira').length
 
+    // Leads para atender: ativos sem 1ª resposta
+    const leadsParaAtender = allLeads.filter(
+      (l) => l.statusLead === 'ativo' && !(l as any).primeiraRespostaEm
+    ).length
+
+    // Follow-ups atrasados: ativos com 1ª resposta, sem followup hoje e último followup há 2+ dias
+    const followupsAtrasados = allLeads.filter((l) => {
+      if (l.statusLead !== 'ativo' || !(l as any).primeiraRespostaEm) return false
+      if (l.followups.length === 0) return false
+      const last = new Date(l.followups[0].registradoEm)
+      const diffDias = Math.floor((hoje.getTime() - last.getTime()) / 86400000)
+      return diffDias >= 2
+    }).length
+
     const porEtapa = allLeads.reduce((acc, l) => {
       acc[l.etapa] = (acc[l.etapa] || 0) + 1
       return acc
@@ -69,6 +83,7 @@ export async function GET(request: NextRequest) {
 
     // Faturamento mes
     const faturamentoMes = leadsConvertidosMes.reduce((sum, l) => sum + (l.valorLiquido || 0), 0)
+    const faturamentoBrutoMes = leadsConvertidosMes.reduce((sum, l) => sum + (l.valorBruto || 0), 0)
 
     // Comissão
     const comissao = calcularComissao(faturamentoMes)
@@ -108,13 +123,16 @@ export async function GET(request: NextRequest) {
         desqualificados: leadsDesqualificados,
         geladeira: leadsGeladeira,
         porEtapa,
+        paraAtender: leadsParaAtender,
       },
       conversao: taxaConversao,
       tempoMedioResposta: Math.round(tempoMedioResposta),
       followupHoje,
+      followupsAtrasados,
       clientesSemContatoMes,
       comissao,
       faturamentoMes,
+      faturamentoBrutoMes,
       leadsChamarDepoisAtrasados: leadsChamarDepoisAtrasados.slice(0, 5),
       checklistConformidade: Math.round(checklistConformidade),
       reativacoesHoje: reativacoesHoje.slice(0, 5),

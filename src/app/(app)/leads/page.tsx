@@ -36,6 +36,7 @@ export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [showNew, setShowNew] = useState(false)
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
 
   // Filtros
   const [search, setSearch] = useState('')
@@ -113,6 +114,45 @@ export default function LeadsPage() {
     setUltimoContatoInicio('')
     setUltimoContatoFim('')
     setSearch('')
+    setSelecionados(new Set())
+  }
+
+  const toggleSelecionado = (id: string) => {
+    setSelecionados((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleTodos = () => {
+    if (selecionados.size === filtered.length) {
+      setSelecionados(new Set())
+    } else {
+      setSelecionados(new Set(filtered.map((l) => l.id)))
+    }
+  }
+
+  const exportarSelecionados = () => {
+    const selecionadosList = filtered.filter((l) => selecionados.has(l.id))
+    const header = ['Nome', 'Telefone', 'Data de Entrada', 'Origem', 'Status no Kanban', 'Vendedor'].join(',')
+    const rows = selecionadosList.map((l) => [
+      `"${l.nomeCliente}"`,
+      l.whatsapp,
+      new Date(l.chegouEm).toLocaleDateString('pt-BR'),
+      l.origem === 'rastreado' ? 'Meta Ads' : 'Direto',
+      getEtapaLabel(l.etapa),
+      l.vendedor?.nome || '',
+    ].join(','))
+    const csv = [header, ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `leads-selecionados-${new Date().toISOString().slice(0,10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const temFiltroAtivo = etapaFilter || origemFilter || vendedorFilter || chegouInicio || chegouFim || ultimoContatoInicio || ultimoContatoFim || search
@@ -232,14 +272,30 @@ export default function LeadsPage() {
         </div>
 
         {/* Contagem + ações */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="text-sm text-gray-500">
             <span className="font-semibold text-gray-900">{filtered.length}</span> lead(s) encontrado(s)
+            {selecionados.size > 0 && (
+              <span className="ml-2 text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                {selecionados.size} selecionado(s)
+              </span>
+            )}
             {temFiltroAtivo && (
               <span className="ml-2 text-xs text-green-600 font-medium">com filtros aplicados</span>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {selecionados.size > 0 && (
+              <button
+                onClick={exportarSelecionados}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Exportar selecionados ({selecionados.size})
+              </button>
+            )}
             <button
               onClick={handleExport}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -247,7 +303,7 @@ export default function LeadsPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              Exportar lista ({filtered.length})
+              Exportar tudo ({filtered.length})
             </button>
             <Button onClick={() => setShowNew(true)}>+ Novo Lead</Button>
           </div>
@@ -263,6 +319,15 @@ export default function LeadsPage() {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableTh>
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && selecionados.size === filtered.length}
+                      onChange={toggleTodos}
+                      className="w-4 h-4 rounded border-gray-300 text-green-600 cursor-pointer"
+                      title="Selecionar todos"
+                    />
+                  </TableTh>
                   <TableTh>Nome</TableTh>
                   <TableTh>Telefone</TableTh>
                   <TableTh>Data de Entrada</TableTh>
@@ -277,7 +342,15 @@ export default function LeadsPage() {
                 {filtered.map((lead) => {
                   const ultimoFollowup = (lead as any).followups?.[0]?.criadoEm
                   return (
-                    <TableRow key={lead.id}>
+                    <TableRow key={lead.id} className={selecionados.has(lead.id) ? 'bg-green-50' : ''}>
+                      <TableTd>
+                        <input
+                          type="checkbox"
+                          checked={selecionados.has(lead.id)}
+                          onChange={() => toggleSelecionado(lead.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-green-600 cursor-pointer"
+                        />
+                      </TableTd>
                       <TableTd>
                         <p className="font-medium text-gray-900">{lead.nomeCliente}</p>
                       </TableTd>
@@ -325,7 +398,7 @@ export default function LeadsPage() {
                 })}
                 {filtered.length === 0 && (
                   <TableRow>
-                    <TableTd className="text-center text-gray-500 py-12" colSpan={8 as any}>
+                    <TableTd className="text-center text-gray-500 py-12" colSpan={9 as any}>
                       <div className="flex flex-col items-center gap-2">
                         <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

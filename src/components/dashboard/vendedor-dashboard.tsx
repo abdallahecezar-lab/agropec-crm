@@ -15,10 +15,12 @@ interface DashboardData {
     desqualificados: number
     geladeira: number
     porEtapa: Record<string, number>
+    paraAtender: number
   }
   conversao: number
   tempoMedioResposta: number
   followupHoje: number
+  followupsAtrasados: number
   clientesSemContatoMes: number
   comissao: {
     faixa: string
@@ -28,6 +30,7 @@ interface DashboardData {
     faltaParaProximaFaixa: number | null
   }
   faturamentoMes: number
+  faturamentoBrutoMes: number
   leadsChamarDepoisAtrasados: any[]
   checklistConformidade: number
   reativacoesHoje: any[]
@@ -56,7 +59,7 @@ export function VendedorDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Stats grid */}
+      {/* Stats grid — linha 1 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
           title="Leads Ativos"
@@ -66,25 +69,57 @@ export function VendedorDashboard() {
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
         />
         <StatsCard
+          title="Para Atender"
+          value={data.leads.paraAtender}
+          subtitle="sem 1ª resposta"
+          variant={data.leads.paraAtender > 0 ? 'warning' : 'success'}
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+        />
+        <StatsCard
+          title="FU Atrasados"
+          value={data.followupsAtrasados}
+          subtitle="sem contato 2+ dias"
+          variant={data.followupsAtrasados > 0 ? 'danger' : 'success'}
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+        <StatsCard
           title="Conversão"
           value={`${data.conversao.toFixed(1)}%`}
           subtitle="leads convertidos"
           variant={data.conversao >= 15 ? 'success' : data.conversao >= 8 ? 'warning' : 'danger'}
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>}
         />
+      </div>
+
+      {/* Stats grid — linha 2: faturamento */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
-          title="Faturamento Mês"
+          title="Fat. Líquido Mês"
           value={formatCurrency(data.faturamentoMes)}
           subtitle="valor líquido"
           variant="success"
           icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
         />
         <StatsCard
+          title="Fat. Bruto Mês"
+          value={formatCurrency(data.faturamentoBrutoMes)}
+          subtitle="valor bruto"
+          variant="default"
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+        />
+        <StatsCard
+          title="Follow-ups Hoje"
+          value={data.followupHoje}
+          subtitle="registrados hoje"
+          variant={data.followupHoje > 0 ? 'success' : 'default'}
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
+        />
+        <StatsCard
           title="Script (%)"
           value={`${data.checklistConformidade}%`}
           subtitle="conformidade"
           variant={data.checklistConformidade >= 80 ? 'success' : data.checklistConformidade >= 50 ? 'warning' : 'danger'}
-          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
+          icon={<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3-3v3" /></svg>}
         />
       </div>
 
@@ -160,7 +195,7 @@ export function VendedorDashboard() {
 
           {/* Quick stats */}
           <Card padding="md">
-            <h3 className="font-semibold text-gray-900 mb-3">Resumo de Hoje</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Resumo Geral</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs text-gray-500">Tempo médio de resposta</p>
@@ -170,10 +205,6 @@ export function VendedorDashboard() {
                     : `${Math.floor(data.tempoMedioResposta / 60)}h`}
                 </p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500">Follow-ups hoje</p>
-                <p className="text-lg font-bold text-gray-900">{data.followupHoje}</p>
-              </div>
               <div className={`p-3 rounded-lg ${data.clientesSemContatoMes > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
                 <p className="text-xs text-gray-500">Clientes sem contato</p>
                 <p className={`text-lg font-bold ${data.clientesSemContatoMes > 0 ? 'text-red-700' : 'text-green-700'}`}>
@@ -181,8 +212,12 @@ export function VendedorDashboard() {
                 </p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500">Geladeira</p>
+                <p className="text-xs text-gray-500">Na Geladeira</p>
                 <p className="text-lg font-bold text-gray-900">{data.leads.geladeira}</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500">Desqualificados</p>
+                <p className="text-lg font-bold text-gray-900">{data.leads.desqualificados}</p>
               </div>
             </div>
           </Card>

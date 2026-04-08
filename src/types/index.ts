@@ -14,6 +14,30 @@ export type EtapaLead =
 
 export type TipoFollowup = 'ligacao' | 'audio_whatsapp' | 'texto_whatsapp'
 
+export type StatusCorreios =
+  | 'aguardando_rastreio'
+  | 'postado'
+  | 'em_transito'
+  | 'disponivel_retirada'
+  | 'retirado'
+  | 'devolvido'
+
+export type TipoTransacao = 'credito' | 'debito'
+
+export interface SalesTransaction {
+  id: string
+  leadId: string
+  vendedorId: string
+  vendedor?: { nome: string }
+  tipo: TipoTransacao
+  valorBruto: number
+  valorLiquido: number
+  mes: number
+  ano: number
+  descricao?: string | null
+  criadoEm: string
+}
+
 export type FormaPagamento = 'pix' | 'cartao' | 'retirada'
 
 export type StatusLead = 'ativo' | 'geladeira' | 'convertido' | 'desqualificado'
@@ -135,6 +159,11 @@ export interface Lead {
   entadaGeladeira?: string | null
   proximaReativacao?: string | null
   tentativasReativacao: number
+  // Correios
+  codigoRastreio?: string | null
+  statusCorreios?: StatusCorreios | null
+  postedAt?: string | null
+  prazoRastreioAt?: string | null
   criadoEm: string
   atualizadoEm: string
   followups?: Followup[]
