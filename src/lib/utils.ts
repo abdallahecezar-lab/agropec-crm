@@ -112,6 +112,7 @@ export function percentualChecklist(totalItems: number, concluidosItems: number)
 export function getEtapaLabel(etapa: string): string {
   const map: Record<string, string> = {
     fez_contato: 'Fez Contato',
+    apresentacao: 'Apresentação',
     proposta_enviada: 'Proposta Enviada',
     negociacao: 'Negociação',
     chamar_depois: 'Chamar Depois',
@@ -127,6 +128,7 @@ export function getEtapaLabel(etapa: string): string {
 export function getEtapaColor(etapa: string): string {
   const map: Record<string, string> = {
     fez_contato: 'bg-blue-100 text-blue-800',
+    apresentacao: 'bg-cyan-100 text-cyan-800',
     proposta_enviada: 'bg-yellow-100 text-yellow-800',
     negociacao: 'bg-orange-100 text-orange-800',
     chamar_depois: 'bg-purple-100 text-purple-800',

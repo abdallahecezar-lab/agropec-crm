@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { isSameDay } from '@/lib/utils'
 
 const createFollowupSchema = z.object({
+  tipo: z.enum(['ligacao', 'audio_whatsapp', 'texto_whatsapp']).optional(),
   observacao: z.string().optional(),
 })
 
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         leadId: params.id,
         vendedorId: user.id,
         numero,
+        tipo: result.data.tipo || null,
         observacao: result.data.observacao || null,
       },
       include: { vendedor: { select: { nome: true } } },

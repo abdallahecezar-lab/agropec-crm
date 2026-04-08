@@ -2,6 +2,7 @@ export type Role = 'gestor' | 'vendedor' | 'diretor'
 
 export type EtapaLead =
   | 'fez_contato'
+  | 'apresentacao'
   | 'proposta_enviada'
   | 'negociacao'
   | 'chamar_depois'
@@ -10,6 +11,8 @@ export type EtapaLead =
   | 'voltou'
   | 'desqualificado'
   | 'geladeira'
+
+export type TipoFollowup = 'ligacao' | 'audio_whatsapp' | 'texto_whatsapp'
 
 export type FormaPagamento = 'pix' | 'cartao' | 'retirada'
 
@@ -78,6 +81,7 @@ export interface Followup {
   vendedorId: string
   vendedor?: { nome: string }
   numero: number
+  tipo?: TipoFollowup | null
   observacao?: string | null
   registradoEm: string
   criadoEm: string

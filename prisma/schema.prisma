@@ -15,6 +15,7 @@ enum Role {
 
 enum EtapaLead {
   fez_contato
+  apresentacao
   proposta_enviada
   negociacao
   chamar_depois
@@ -23,6 +24,12 @@ enum EtapaLead {
   voltou
   desqualificado
   geladeira
+}
+
+enum TipoFollowup {
+  ligacao
+  audio_whatsapp
+  texto_whatsapp
 }
 
 enum FormaPagamento {
@@ -158,15 +165,16 @@ model Lead {
 }
 
 model Followup {
-  id           String   @id @default(cuid())
+  id           String         @id @default(cuid())
   leadId       String
-  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead         Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
   vendedorId   String
-  vendedor     User     @relation(fields: [vendedorId], references: [id])
+  vendedor     User           @relation(fields: [vendedorId], references: [id])
   numero       Int
+  tipo         TipoFollowup?
   observacao   String?
-  registradoEm DateTime @default(now())
-  criadoEm     DateTime @default(now())
+  registradoEm DateTime       @default(now())
+  criadoEm     DateTime       @default(now())
 }
 
 model ScriptChecklistItem {

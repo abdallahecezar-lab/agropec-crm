@@ -68,13 +68,27 @@ export function LeadCard({ lead, isDragging, onUpdated }: LeadCardProps) {
   const estaAtrasado = lead.agendadoPara && new Date(lead.agendadoPara) < hoje
   const semPrimeiraResposta = !lead.primeiraRespostaEm
 
+  // Destaque vermelho: sem contato há 3+ dias (lead ativo)
+  const ultimoContatoEm =
+    (lead.followups as any)?.[0]?.criadoEm
+      ? new Date((lead.followups as any)[0].criadoEm)
+      : lead.primeiraRespostaEm
+        ? new Date(lead.primeiraRespostaEm)
+        : null
+  const diasSemContato = ultimoContatoEm
+    ? Math.floor((hoje.getTime() - ultimoContatoEm.getTime()) / 86400000)
+    : Math.floor((hoje.getTime() - new Date(lead.chegouEm).getTime()) / 86400000)
+  const semContatoRecente = lead.statusLead === 'ativo' && diasSemContato >= 3
+
+  const cardAlerta = estaAtrasado || semContatoRecente
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={`bg-white rounded-lg border shadow-sm p-3 cursor-grab active:cursor-grabbing select-none transition-shadow ${
         isDragging ? 'shadow-lg ring-2 ring-green-500' : 'hover:shadow-md border-gray-200'
-      } ${estaAtrasado ? 'border-l-4 border-l-red-500' : ''}`}
+      } ${cardAlerta ? 'border-l-4 border-l-red-500 bg-red-50/40' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -138,6 +152,11 @@ export function LeadCard({ lead, isDragging, onUpdated }: LeadCardProps) {
           {estaAtrasado && (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
               ⏰ Atrasado
+            </span>
+          )}
+          {!estaAtrasado && semContatoRecente && (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+              🔴 {diasSemContato}d
             </span>
           )}
         </div>

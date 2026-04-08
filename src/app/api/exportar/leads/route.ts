@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 const ETAPA_LABEL: Record<string, string> = {
   fez_contato: 'Fez Contato',
+  apresentacao: 'Apresentação',
   proposta_enviada: 'Proposta Enviada',
   negociacao: 'Negociação',
   chamar_depois: 'Chamar Depois',

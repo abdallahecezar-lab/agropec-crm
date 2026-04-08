@@ -157,6 +157,7 @@ export default function LeadsPage() {
                 options={[
                   { value: '', label: 'Todas as etapas' },
                   { value: 'fez_contato', label: 'Fez Contato' },
+                  { value: 'apresentacao', label: 'Apresentação' },
                   { value: 'proposta_enviada', label: 'Proposta Enviada' },
                   { value: 'negociacao', label: 'Negociação' },
                   { value: 'chamar_depois', label: 'Chamar Depois' },

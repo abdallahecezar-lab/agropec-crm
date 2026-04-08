@@ -17,6 +17,7 @@ interface FollowupSectionProps {
 
 export function FollowupSection({ leadId, followups, hasPrimeiraResposta, onAdded, onPrimeiraResposta }: FollowupSectionProps) {
   const [showForm, setShowForm] = useState(false)
+  const [tipo, setTipo] = useState<'ligacao' | 'audio_whatsapp' | 'texto_whatsapp' | ''>('')
   const [observacao, setObservacao] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -36,6 +37,10 @@ export function FollowupSection({ leadId, followups, hasPrimeiraResposta, onAdde
   }
 
   const handleAddFollowup = async () => {
+    if (!tipo) {
+      setError('Selecione o tipo de contato (Ligação, Áudio ou Texto)')
+      return
+    }
     setLoading(true)
     setError('')
     setSugestao('')
@@ -44,7 +49,7 @@ export function FollowupSection({ leadId, followups, hasPrimeiraResposta, onAdde
       const res = await fetch(`/api/leads/${leadId}/followups`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ observacao }),
+        body: JSON.stringify({ tipo, observacao }),
       })
 
       const data = await res.json()
@@ -55,6 +60,7 @@ export function FollowupSection({ leadId, followups, hasPrimeiraResposta, onAdde
       }
 
       onAdded(data.followup)
+      setTipo('')
       setObservacao('')
       setShowForm(false)
       if (data.sugestao) setSugestao(data.sugestao)
@@ -124,18 +130,46 @@ export function FollowupSection({ leadId, followups, hasPrimeiraResposta, onAdde
               {error}
             </div>
           )}
+
+          {/* Tipo de contato — obrigatório */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Tipo de contato <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-2">
+              {([
+                { value: 'ligacao', label: '📞 Ligação' },
+                { value: 'audio_whatsapp', label: '🎙️ Áudio' },
+                { value: 'texto_whatsapp', label: '💬 Texto' },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setTipo(opt.value)}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
+                    tipo === opt.value
+                      ? 'bg-green-600 text-white border-green-600'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-green-400 hover:text-green-600'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Textarea
-            label={`Follow-up #${totalFollowups + 1}`}
+            label={`Follow-up #${totalFollowups + 1} — Observação (opcional)`}
             value={observacao}
             onChange={(e) => setObservacao(e.target.value)}
-            placeholder="Observação sobre este follow-up (opcional)..."
+            placeholder="Como foi o contato? O que o cliente disse?..."
             rows={2}
           />
           <div className="flex gap-2 mt-3">
             <Button size="sm" onClick={handleAddFollowup} loading={loading}>
               Registrar
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowForm(false)} disabled={loading}>
+            <Button size="sm" variant="ghost" onClick={() => { setShowForm(false); setTipo(''); setError('') }} disabled={loading}>
               Cancelar
             </Button>
           </div>
@@ -158,8 +192,13 @@ export function FollowupSection({ leadId, followups, hasPrimeiraResposta, onAdde
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                 <span className="text-xs font-medium text-gray-700">Follow-up #{fu.numero}</span>
+                {fu.tipo && (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+                    {fu.tipo === 'ligacao' ? '📞 Ligação' : fu.tipo === 'audio_whatsapp' ? '🎙️ Áudio' : '💬 Texto'}
+                  </span>
+                )}
                 <span className="text-xs text-gray-400">por {fu.vendedor?.nome}</span>
               </div>
               {fu.observacao && (

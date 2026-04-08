@@ -1,5 +1,6 @@
 export const ETAPAS_LEAD = [
   { id: 'fez_contato', label: 'Fez Contato', color: 'bg-blue-100 border-blue-300', headerColor: 'bg-blue-300', darkText: true },
+  { id: 'apresentacao', label: 'Apresentação', color: 'bg-cyan-100 border-cyan-300', headerColor: 'bg-cyan-300', darkText: true },
   { id: 'proposta_enviada', label: 'Proposta Enviada', color: 'bg-yellow-100 border-yellow-300', headerColor: 'bg-yellow-300', darkText: true },
   { id: 'negociacao', label: 'Negociação', color: 'bg-orange-100 border-orange-300', headerColor: 'bg-orange-300', darkText: true },
   { id: 'chamar_depois', label: 'Chamar Depois', color: 'bg-purple-100 border-purple-300', headerColor: 'bg-purple-300', darkText: true },
