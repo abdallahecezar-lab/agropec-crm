@@ -64,7 +64,7 @@ interface VendedorStat {
   desqualificados: number
 }
 
-type OrdemVendedor = 'faturamento' | 'taxaConversaoLeads' | 'taxaConversaoCarteira' | 'followupsAtrasados' | 'desqualificados' | 'leadsRecebidos'
+type OrdemVendedor = 'faturamento' | 'taxaConversaoLeads' | 'taxaConversaoCarteira' | 'followupsAtrasados' | 'desqualificados' | 'leadsRecebidos' | 'ticketMedioLeads' | 'ticketMedioCarteira'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
